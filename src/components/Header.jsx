@@ -26,22 +26,17 @@ const Header = () => {
       }}
     >
       <Link to={"/"} reloadDocument>
-        <IconButton aria-label="home">
+        <IconButton aria-label="home" style={{ background: 'transparent' }}>
           <HomeIcon
-            className={`${
-              theme === "dark"
-                ? "bg-[#163e73] text-white"
-                : "bg-[#e3f0ff] text-black"
-            }`}
+            className={theme === "dark" ? "text-white" : "text-black"}
+            style={{ background: 'transparent' }}
           />
         </IconButton>
       </Link>
 
       <div className="flex flex-col items-center gap-4">
         <h1
-          className={`text-xl font-bold transition-colors duration-300 ${
-            theme === "dark" ? "text-white" : "text-black"
-          }`}
+          className="text-xl font-bold transition-colors duration-300 text-blue-700"
         >
           National Energy and Emission Modeling and Analysis Tool
         </h1>

@@ -85,6 +85,8 @@ import SeattleTF from "../assets/TrafficVolumeWA.png";
 import NewYorkTF from "../assets/TrafficVolumeNY.png";
 import TractParametersTable from "./TractParametersTable";
 import { toast } from "react-toastify";
+// Add imports for legend and axis explanation images
+import TrafficLegend from "../assets/TrafficLegend.jpg";
 registerAllModules();
 function ProjectedDemand({ activeStep }) {
   const [showTable, setShowTable] = useState(false);
@@ -264,11 +266,22 @@ function ProjectedDemand({ activeStep }) {
           </div>
         </form>
         {srcImg ? (
-          <img
-            src={srcImg}
-            alt={city}
-            className="w-full max-h-[350px] ma object-contain rounded"
-          />
+          <>
+            <img
+              src={srcImg}
+              alt={city}
+              className="w-full max-h-[350px] object-contain rounded"
+            />
+            {/* Only the legend image below the main plot */}
+            <div className="flex justify-center mt-2">
+              <img
+                src={TrafficLegend}
+                alt="Traffic Volume Legend"
+                className="h-12 object-contain"
+                style={{ maxWidth: 400 }}
+              />
+            </div>
+          </>
         ) : null}
         {showTable && projectedDemandState.projectedTrafficVolumeData.length ? (
           <div>

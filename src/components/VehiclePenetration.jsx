@@ -235,15 +235,18 @@ function VehiclePenetration({ activeStep }) {
                 : "bg-blue-400 text-white"
             }`}
           >
-            <span className="mr-2">Upload</span> Projected Penetration
-            <CloudUpload className="ml-2 w-5 h-5" />
-            <input
-              type="file"
-              accept=".xlsx, .xls, .csv"
-              onChange={handleFileChange}
-              className="hidden"
-              ref={fileInputRef}
-            />
+            <span className="flex items-center gap-2 w-full justify-center">
+                              Upload Projected Penetration
+                              <CloudUpload className="w-4 h-4" />
+                            </span>
+                            <input
+                              type="file"
+                              accept=".xlsx, .xls, .csv"
+                              onChange={handleFileChange}
+                              disabled={classificationState.city === ""}
+                              className="hidden"
+                            />
+            
           </label>
 
           {/* Base Year Dropdown (disabled) */}

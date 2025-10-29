@@ -3,6 +3,7 @@ import Atlanta from "../assets/Georgia.svg";
 import LosAngeles from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
+import gridDataImg from "../assets/gridData.jpg";
 import VehicleStepper from "./VerticalStepper";
 import AnalysisImage from "./AnalysisImage";
 import {
@@ -126,7 +127,6 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
             <label className="text-xs font-medium text-gray-600">
               Grid Emission Type
             </label>
-
             <select
               value={GridEmissionState.EmissionType}
               onChange={(e) =>
@@ -157,29 +157,38 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
               ))}
             </select>
           </div>
+          <div className="flex flex-col justify-end h-full">
+            <Button
+              variant="contained"
+              onClick={onDownload}
+              disabled={
+                !GridEmissionState.EmissionType || !classificationState.cityInput
+              }
+            >
+              Download
+            </Button>
+          </div>
         </form>
-        {classificationState.cityInput && GridEmissionState.EmissionType && (
-          <AnalysisImage
-            emissionType={GridEmissionState.EmissionType}
-            city={classificationState.cityInput}
-            className="max-w-[900px] w-full h-auto object-contain rounded self-start"
-            fallback={
-              <div className="text-sm text-red-600">Image not found</div>
-            }
+        
+        <div className="flex flex-row items-start gap-8 mt-2">
+          <div className="flex-1">
+            {classificationState.cityInput && GridEmissionState.EmissionType ? (
+              <AnalysisImage
+                emissionType={GridEmissionState.EmissionType}
+                city={classificationState.cityInput}
+                className="max-w-[900px] w-full h-auto object-contain rounded self-start"
+                fallback={<div className="text-sm text-red-600">Image not found</div>}
+              />
+            ) : null}
+          </div>
+          <img
+            src={gridDataImg}
+            alt="Grid Data"
+            className="h-[500px] object-contain rounded border border-gray-300 shadow-md"
+            style={{ maxWidth: '50%' }}
           />
-        )}
-
-        <div>
-          <Button
-            variant="contained"
-            onClick={onDownload}
-            disabled={
-              !GridEmissionState.EmissionType || !classificationState.cityInput
-            }
-          >
-            Download
-          </Button>
         </div>
+
       </div>
 
       <div className="flex flex-col gap-6">
@@ -192,11 +201,15 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
           />
         </div>
         {classificationState.city && cityImages[classificationState.city] && (
-          <img
-            src={cityImages[classificationState.city]}
-            alt={classificationState.city}
-            className="w-full h-[500px] object-contain rounded"
-          />
+          <div className="flex flex-row gap-6 items-start">
+            <img
+              src={cityImages[classificationState.city]}
+              alt={classificationState.city}
+              className="h-[500px] object-contain rounded"
+              style={{ maxWidth: '50%' }}
+            />
+           
+          </div>
         )}
       </div>
     </div>

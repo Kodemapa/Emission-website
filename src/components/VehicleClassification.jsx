@@ -282,26 +282,26 @@ function VehicleClassification({ activeStep }) {
                 </select>
               </div>
             </div>
-            {/* Upload Vehicle Classification button below */}
-            <label
-              className={`flex-1 min-w-0 flex items-center font-semibold px-4 md:px-8 py-2.5 rounded cursor-pointer h-[44px] text-base transition-colors duration-300 whitespace-nowrap mt-2 ${
-                theme === "dark"
-                  ? "bg-blue-900 text-white"
-                  : "bg-blue-400 text-white"
-              }`}
-            >
-              <span className="flex items-center gap-2 w-full justify-center">
-                Upload Vehicle Classification
-                <CloudUpload className="w-5 h-5" />
-              </span>
-              <input
-                type="file"
-                accept=".xlsx, .xls, .csv"
-                onChange={handleFileChange}
-                disabled={classificationState.city === ""}
-                className="hidden"
-              />
-            </label>
+            {/* Upload Vehicle Classification button below City, right-aligned and smaller */}
+            <div className="flex w-full justify-end mt-2">
+              <label
+                className={`flex items-center font-semibold px-3 py-1.5 rounded cursor-pointer h-[36px] text-sm transition-colors duration-300 whitespace-nowrap w-full max-w-[300px]
+                  ${theme === "dark" ? "bg-blue-900 text-white" : "bg-blue-400 text-white"}`}
+                style={{ minWidth: 0 }}
+              >
+                <span className="flex items-center gap-2 w-full justify-center">
+                  Upload Vehicle Classification
+                  <CloudUpload className="w-4 h-4" />
+                </span>
+                <input
+                  type="file"
+                  accept=".xlsx, .xls, .csv"
+                  onChange={handleFileChange}
+                  disabled={classificationState.city === ""}
+                  className="hidden"
+                />
+              </label>
+            </div>
           </form>
 
         {/* Handsontable */}

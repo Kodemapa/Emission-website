@@ -190,23 +190,23 @@ function VehicleTrafficVolume({ activeStep }) {
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 rounded">
-          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 min-w-[200px] justify-center">
-            <span className="mr-2">Upload</span> Traffic Volume
+          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 w-48 whitespace-nowrap justify-center">
+            <span className="mr-2">Upload Traffic Volume</span>
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
-              onChange={(e) => loadSheet(e.target.files[0], "trafficVolume")}
+              onChange={(e) => loadSheet(e.target.files[0], 'trafficVolume')}
               className="hidden"
             />
           </label>
-          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 min-w-[220px] justify-center">
-            <span className="mr-2">Upload</span> MFD Parameters
+          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 w-48 whitespace-nowrap justify-center ml-4">
+            <span className="mr-2 ml-2">Upload MFD Parameters</span>
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
-              onChange={(e) => loadSheet(e.target.files[0], "mftParameters")}
+              onChange={(e) => loadSheet(e.target.files[0], 'mftParameters')}
               className="hidden"
             />
           </label>
