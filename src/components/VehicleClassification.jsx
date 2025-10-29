@@ -1,3 +1,4 @@
+
 import React from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -15,13 +16,11 @@ import VehicleStepper from "./VerticalStepper";
 import useAppStore from "../useAppStore";
 import { toast } from "react-toastify";
 
-registerAllModules();
 
 function VehicleClassification({ activeStep }) {
   const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const setClassificationState = useAppStore((s) => s.setClassificationState);
-
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
   const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
   const verticalSteps = [
@@ -30,6 +29,32 @@ function VehicleClassification({ activeStep }) {
     "Traffic Volume and Speed",
     "Projected Demand",
   ];
+
+  // Pagination state and handlers
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+  const totalRows = classificationState.classificationData?.length || 0;
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+  const paginatedData = React.useMemo(() => {
+    if (!classificationState.classificationData) return [];
+    const start = currentPage * rowsPerPage;
+    return classificationState.classificationData.slice(start, start + rowsPerPage);
+  }, [classificationState.classificationData, currentPage, rowsPerPage]);
+
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(0);
+  };
+
+  const handlePaginationNext = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
+  };
+
+  const handleBack = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 0));
+  };
 
   // ✅ Send data to backend on Next
   const handleNext = async () => {
@@ -76,8 +101,6 @@ function VehicleClassification({ activeStep }) {
       toast.error("Upload failed: " + err.message);
     }
   };
-
-  // filter helper (by first column = vehicle type)
   const filterByVehicle = React.useCallback((rows, vehicleType) => {
     if (!rows || rows.length === 0) return [];
     if (!vehicleType) return rows;
@@ -156,168 +179,197 @@ function VehicleClassification({ activeStep }) {
   };
 
   return (
-    <div className="flex flex-row items-stretch gap-6 pl-6 pt-4 transition-colors duration-300">
+    <div className="flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 pt-4 transition-colors duration-300 w-full max-w-full justify-center">
       {/* Left panel: form + table */}
-      <div className="flex flex-col gap-6">
-        <form className="flex items-end gap-4 p-4 rounded transition-colors duration-300">
-          <label
-            className={`flex items-center font-semibold px-4 py-2 rounded cursor-pointer h-[32px] transition-colors duration-300 ${
-              theme === "dark"
-                ? "bg-blue-900 text-white"
-                : "bg-blue-400 text-white"
-            }`}
-          >
-            <span className="mr-2">Upload</span> Vehicle Classification
-            <CloudUpload className="ml-2 w-5 h-5" />
-            <input
-              type="file"
-              accept=".xlsx, .xls, .csv"
-              onChange={handleFileChange}
-              disabled={classificationState.city === ""}
-              className="hidden"
-            />
-          </label>
-
-          {/* Base Year */}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">
-              Base Year
+      <div className="flex-1 flex flex-col items-center">
+        <div className="w-full max-w-3xl mx-auto flex flex-col gap-6">
+          <form className="flex flex-col gap-2 md:gap-4 p-2 md:p-4 rounded transition-colors duration-300 w-full min-w-0 overflow-x-auto">
+            <div className="flex flex-col md:flex-row gap-2 md:gap-4 w-full">
+              {/* Base Year */}
+              <div className="flex flex-col gap-1 min-w-[80px] max-w-[100px] w-auto">
+                <label className="text-xs font-medium text-gray-600">
+                  Base Year
+                </label>
+                <select
+                  value={classificationState.baseYear}
+                  onChange={(e) =>
+                    setClassificationState({ baseYear: e.target.value })
+                  }
+                  className={`border rounded px-2 py-1 w-full h-[32px] transition-colors duration-300 ${
+                    theme === "dark"
+                      ? "bg-[#18181b] text-white border-gray-700"
+                      : "bg-white text-black border-gray-300"
+                  }`}
+                  disabled={classificationState.city === ""}
+                >
+                  <option value="">Year</option>
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+                </select>
+              </div>
+              {/* Vehicle Type */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs font-medium text-gray-600">
+                  Vehicle Type
+                </label>
+                <select
+                  value={classificationState.vehicleType}
+                  onChange={(e) =>
+                    setClassificationState({ vehicleType: e.target.value })
+                  }
+                  disabled={classificationState.city === ""}
+                  className={`border rounded px-2 py-1 w-full transition-colors duration-300 ${
+                    theme === "dark"
+                      ? "bg-[#18181b] text-white border-gray-700"
+                      : "bg-white text-black border-gray-300"
+                  }`}
+                >
+                  <option value="">Vehicle Type</option>
+                  <option value="Combination long-haul Truck">
+                    Combination long-haul Truck
+                  </option>
+                  <option value="Combination short-haul Truck">
+                    Combination short-haul Truck
+                  </option>
+                  <option value="Light Commercial Truck">
+                    Light Commercial Truck
+                  </option>
+                  <option value="Motorhome - Recreational Vehicle">
+                    Motorhome - Recreational Vehicle
+                  </option>
+                  <option value="Motorcycle">Motorcycle</option>
+                  <option value="Other Buses">Other Buses</option>
+                  <option value="Passenger Truck">Passenger Truck</option>
+                  <option value="Refuse Truck">Refuse Truck</option>
+                  <option value="School Bus">School Bus</option>
+                  <option value="Single Unit long-haul Truck">
+                    Single Unit long-haul Truck
+                  </option>
+                  <option value="Single Unit short-haul Truck">
+                    Single Unit short-haul Truck
+                  </option>
+                  <option value="Transit Bus">Transit Bus</option>
+                </select>
+              </div>
+              {/* City */}
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <label className="text-xs font-medium text-gray-600">City</label>
+                <select
+                  value={classificationState.cityInput}
+                  onChange={(e) =>
+                    setClassificationState({
+                      cityInput: e.target.value,
+                      city: e.target.value.replace(/\s+/g, ""),
+                    })
+                  }
+                  className={`border rounded px-2 py-1 w-full transition-colors duration-300 ${
+                    theme === "dark"
+                      ? "bg-[#18181b] text-white border-gray-700"
+                      : "bg-white text-black border-gray-300"
+                  }`}
+                >
+                  <option value="">City</option>
+                  {statesList.slice(1).map((st) => (
+                    <option key={st} value={st}>
+                      {st}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {/* Upload Vehicle Classification button below */}
+            <label
+              className={`flex-1 min-w-0 flex items-center font-semibold px-4 md:px-8 py-2.5 rounded cursor-pointer h-[44px] text-base transition-colors duration-300 whitespace-nowrap mt-2 ${
+                theme === "dark"
+                  ? "bg-blue-900 text-white"
+                  : "bg-blue-400 text-white"
+              }`}
+            >
+              <span className="flex items-center gap-2 w-full justify-center">
+                Upload Vehicle Classification
+                <CloudUpload className="w-5 h-5" />
+              </span>
+              <input
+                type="file"
+                accept=".xlsx, .xls, .csv"
+                onChange={handleFileChange}
+                disabled={classificationState.city === ""}
+                className="hidden"
+              />
             </label>
-            <select
-              value={classificationState.baseYear}
-              onChange={(e) =>
-                setClassificationState({ baseYear: e.target.value })
-              }
-              className={`border rounded px-2 py-1 w-20 h-[32px] transition-colors duration-300 ${
-                theme === "dark"
-                  ? "bg-[#18181b] text-white border-gray-700"
-                  : "bg-white text-black border-gray-300"
-              }`}
-              disabled={classificationState.city === ""}
-            >
-              <option value="">Year</option>
-              <option value="2020">2020</option>
-              <option value="2021">2021</option>
-              <option value="2022">2022</option>
-              <option value="2023">2023</option>
-              <option value="2024">2024</option>
-              <option value="2025">2025</option>
-              <option value="2026">2026</option>
-              <option value="2027">2027</option>
-              <option value="2028">2028</option>
-              <option value="2029">2029</option>
-              <option value="2030">2030</option>
-            </select>
-          </div>
-
-          {/* Vehicle Type */}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">
-              Vehicle Type
-            </label>
-            <select
-              value={classificationState.vehicleType}
-              onChange={(e) =>
-                setClassificationState({ vehicleType: e.target.value })
-              }
-              disabled={classificationState.city === ""}
-              className={`border rounded px-2 py-1 w-32 transition-colors duration-300 ${
-                theme === "dark"
-                  ? "bg-[#18181b] text-white border-gray-700"
-                  : "bg-white text-black border-gray-300"
-              }`}
-            >
-              <option value="">Vehicle Type</option>
-              <option value="Combination long-haul Truck">
-                Combination long-haul Truck
-              </option>
-              <option value="Combination short-haul Truck">
-                Combination short-haul Truck
-              </option>
-              <option value="Light Commercial Truck">
-                Light Commercial Truck
-              </option>
-              <option value="Motorhome - Recreational Vehicle">
-                Motorhome - Recreational Vehicle
-              </option>
-              <option value="Motorcycle">Motorcycle</option>
-              <option value="Other Buses">Other Buses</option>
-              <option value="Passenger Truck">Passenger Truck</option>
-              <option value="Refuse Truck">Refuse Truck</option>
-              <option value="School Bus">School Bus</option>
-              <option value="Single Unit long-haul Truck">
-                Single Unit long-haul Truck
-              </option>
-              <option value="Single Unit short-haul Truck">
-                Single Unit short-haul Truck
-              </option>
-              <option value="Transit Bus">Transit Bus</option>
-            </select>
-          </div>
-
-          {/* City */}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">City</label>
-            <select
-              value={classificationState.cityInput}
-              onChange={(e) =>
-                setClassificationState({
-                  cityInput: e.target.value,
-                  city: e.target.value.replace(/\s+/g, ""),
-                })
-              }
-              className={`border rounded px-2 py-1 w-25 transition-colors duration-300 ${
-                theme === "dark"
-                  ? "bg-[#18181b] text-white border-gray-700"
-                  : "bg-white text-black border-gray-300"
-              }`}
-            >
-              <option value="">City</option>
-              {statesList.slice(1).map((st) => (
-                <option key={st} value={st}>
-                  {st}
-                </option>
-              ))}
-            </select>
-          </div>
-        </form>
+          </form>
 
         {/* Handsontable */}
         {classificationState.classificationData?.length > 0 ? (
-          <div
-            className="flex-1 min-w-[60%] overflow-auto"
-            style={{ minHeight: "500px" }}
-          >
+          <div className="flex-1 w-full min-w-0 overflow-auto" style={{ minHeight: 320, maxHeight: 480 }}>
+            <div className="flex items-center justify-end mb-2">
+              <label className="mr-2 font-semibold">Rows per page:</label>
+              <select
+                value={rowsPerPage}
+                onChange={handleRowsPerPageChange}
+                className="border rounded px-2 py-1"
+                style={{ width: 80 }}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
             <HotTable
-              data={classificationState.classificationData}
+              data={paginatedData}
               colHeaders={classificationState.classificationHeaders}
               rowHeaders
               stretchH="all"
-              height="100%"
+              height={350}
               width="100%"
               licenseKey="non-commercial-and-evaluation"
               themeName={
                 theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
               }
             />
+            <div className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-4 mt-4">
+              <button
+                className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
+                onClick={handleBack}
+                disabled={currentPage === 0}
+                type="button"
+              >
+                <i className="bi bi-chevron-left"></i>
+              </button>
+              <span className="px-2 py-2 font-semibold">
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              <button
+                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                onClick={handlePaginationNext}
+                disabled={currentPage >= totalPages - 1}
+                type="button"
+              >
+                <i className="bi bi-chevron-right"></i>
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="flex-1 min-w-[60%] overflow-auto">
+          <div className="flex-1 w-full min-w-0 overflow-auto">
             {/* placeholder */}
           </div>
         )}
+        </div>
       </div>
 
-      {/* Right panel */}
-      <div className="flex flex-col gap-6">
-        <div className="ml-4">
-          <VehicleStepper activeStep={activeStep} steps={verticalSteps} />
-        </div>
+      {/* Right panel: only map image if available */}
+      <div className="flex flex-col gap-6 justify-center items-center w-full md:w-[300px] max-w-[400px] mx-auto md:mx-0">
         {classificationState.city && cityImages[classificationState.city] && (
           <img
             src={cityImages[classificationState.city]}
             alt={classificationState.city}
-            className="w-full h-[500px] object-contain rounded"
+            className="w-full max-h-[300px] md:max-h-[500px] object-contain rounded"
           />
         )}
       </div>

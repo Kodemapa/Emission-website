@@ -17,8 +17,7 @@ const steps = [
   "Projected Demand",
 ];
 
-function InputStepper({ finalNext }) {
-  const [activeStep, setActiveStep] = useState(0);
+function InputStepper({ finalNext, activeStep, setActiveStep }) {
   const lastSentDataRef = useRef(null);
   const VEHICLE_TYPES = [
     "Combination long-haul Truck",
@@ -188,7 +187,7 @@ function InputStepper({ finalNext }) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-5 pl-6 pt-4">
+    <div className="flex flex-col items-center gap-5 pl-2 pt-0 mt-[-5rem] w-full">
       {/* Step-wise content */}
       <div className="w-full">
         {activeStep === 0 && <VehicleClassification activeStep={activeStep} />}
@@ -198,7 +197,7 @@ function InputStepper({ finalNext }) {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between w-full pl-6 pr-6">
+      <div className="w-full max-w-3xl mx-auto flex flex-row justify-between gap-4 mt-2">
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
           onClick={handleBack}
@@ -206,22 +205,24 @@ function InputStepper({ finalNext }) {
         >
           Back
         </button>
-        {activeStep < steps.length - 1 && (
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-            onClick={handleNext}
-          >
-            Next
-          </button>
-        )}
-        {activeStep === steps.length - 1 && (
-          <button
-            className="bg-green-600 text-white px-4 py-2 rounded"
-            onClick={finalNext}
-          >
-            Go to Analysis
-          </button>
-        )}
+        <div>
+          {activeStep < steps.length - 1 && (
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+              onClick={handleNext}
+            >
+              Next
+            </button>
+          )}
+          {activeStep === steps.length - 1 && (
+            <button
+              className="bg-green-600 text-white px-4 py-2 rounded"
+              onClick={finalNext}
+            >
+              Go to Analysis
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

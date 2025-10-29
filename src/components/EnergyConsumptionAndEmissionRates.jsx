@@ -6,8 +6,8 @@ import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
 import { Button } from "@mui/material";
+
 import { Line } from "react-chartjs-2";
-import { toast } from "react-toastify";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -81,8 +81,9 @@ function getRandomColor(idx) {
   return colors[idx % colors.length];
 }
 
-export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
+export default function EnergyConsumptionAndEmissionRates() {
   // Store slices
+  const addNotification = useAppStore((s) => s.addNotification);
   const classificationState = useAppStore((s) => s.classificationState);
   const ConsumptionAndEmissionState = useAppStore(
     (s) => s.ConsumptionAndEmission
@@ -285,10 +286,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
     Seattle: "Seattle",
   };
 
-  const steps = [
-    "Vehicle Energy Consumption and Emission Rates",
-    " Grid Emission Rates",
-  ];
+  // ...existing code...
 
   const ageOptions = useMemo(
     () => Array.from({ length: 30 }, (_, i) => i + 1),
@@ -469,9 +467,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                         25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75,
                       ]; // Speed range
                       const consumptionDataPoints = [];
-                      toast.info(
-                        `Fetching Fuel Consumption for ${vehicleType}...`
-                      );
+                      addNotification(`Fetching Fuel Consumption for ${vehicleType}...`);
 
                       for (const speed of speeds) {
                         const consumptionPayload = {
@@ -520,9 +516,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                           } catch {
                             const sanitized = txt.replace(/\bNaN\b/g, "null");
                             consumptionData = JSON.parse(sanitized);
-                            console.warn(
-                              "consumption response contained NaN - parsed after sanitizing"
-                            );
+                            // addNotification("consumption response contained NaN - parsed after sanitizing");
                           }
                         } catch (e) {
                           throw new Error(
@@ -531,6 +525,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                           );
                         }
                         if (!Array.isArray(consumptionData)) {
+                          addNotification("Consumption response is not an array: " + JSON.stringify(consumptionData));
                           throw new Error(
                             "Consumption response is not an array: " +
                               JSON.stringify(consumptionData)
@@ -567,9 +562,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
 
                     // Emissions (right chart) - only when emission type changed
                     if (shouldFetchEmissions) {
-                      toast.info(
-                        `Fetching ${emissionType} for ${vehicleType}...`
-                      );
+                      addNotification(`Fetching ${emissionType} for ${vehicleType}...`);
 
                       const emissionPayload = {
                         City: selectedCityName,
@@ -618,9 +611,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                           // Replace bare NaN tokens with null then parse
                           const sanitized = txt.replace(/\bNaN\b/g, "null");
                           selectedData = JSON.parse(sanitized);
-                          console.warn(
-                            "predict_emissions response contained NaN - parsed after sanitizing"
-                          );
+                          // addNotification("predict_emissions response contained NaN - parsed after sanitizing");
                         }
                       } catch (e) {
                         console.error(
@@ -634,6 +625,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                         );
                       }
                       if (!Array.isArray(selectedData)) {
+                        addNotification("Emissions response is not an array: " + JSON.stringify(selectedData));
                         throw new Error(
                           "Emissions response is not an array: " +
                             JSON.stringify(selectedData)
@@ -659,7 +651,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                         },
                       }));
 
-                      toast.success(`Predictions received for ${vehicleType}!`);
+                      addNotification(`Predictions received for ${vehicleType}!`);
                     }
                   }
 
@@ -669,7 +661,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                   if (shouldFetchEmissions)
                     setLastEmissionTypeRequested(emissionType);
 
-                  toast.success("✅ All vehicle types processed successfully!");
+                  addNotification("✅ All vehicle types processed successfully!");
                 } catch (err) {
                   // Log error with full details to help debug the specific failure case
                   console.error("Predict & Plot error", err);
@@ -677,7 +669,7 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
                     err && (err.message || err.toString())
                       ? err.message || err.toString()
                       : "Unknown error";
-                  toast.error("Error contacting backend: " + detail);
+                  addNotification("Error contacting backend: " + detail);
                 }
               }}
             >
@@ -833,11 +825,8 @@ export default function EnergyConsumptionAndEmissionRates({ activeStep }) {
         </div>
       </div>
 
-      {/* Right: stepper + map image */}
+      {/* Right: map image only (stepper removed) */}
       <div className="flex flex-col gap-6">
-        <div className="ml-4">
-          <VehicleStepper activeStep={activeStep} steps={steps} />
-        </div>
         <div>
           {selectedCityKey && cityImages[selectedCityKey] && (
             <img

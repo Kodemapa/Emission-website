@@ -64,7 +64,7 @@ const handleNext = async () => {
   }
   // Optionally move to next page here
 };
-import React from "react";
+import React, { useState } from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
 import { HotTable } from "@handsontable/react";
@@ -78,7 +78,7 @@ import "handsontable/dist/handsontable.full.min.css";
 import "handsontable/styles/handsontable.css";
 import "handsontable/styles/ht-theme-main.css";
 import "handsontable/styles/ht-theme-horizon.css";
-import VehicleStepper from "./VerticalStepper";
+// import VehicleStepper from "./VerticalStepper";
 import AtlantaTF from "../assets/TrafficVolumeGA.png";
 import LosAngelesTF from "../assets/TrafficVolumeCA.png";
 import SeattleTF from "../assets/TrafficVolumeWA.png";
@@ -87,6 +87,7 @@ import TractParametersTable from "./TractParametersTable";
 import { toast } from "react-toastify";
 registerAllModules();
 function ProjectedDemand({ activeStep }) {
+  const [showTable, setShowTable] = useState(false);
   const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const penetrationState = useAppStore((s) => s.penetrationState);
@@ -100,12 +101,12 @@ function ProjectedDemand({ activeStep }) {
     Seattle: SeattleTF,
     NewYork: NewYorkTF,
   };
-  const verticalSteps = [
-    "Vehicle Classification Data",
-    "Projected Vehicle Penetration Rate Data",
-    "Traffic Volume and Speed",
-    "Projected Demand",
-  ];
+  // const verticalSteps = [
+  //   "Vehicle Classification Data",
+  //   "Projected Vehicle Penetration Rate Data",
+  //   "Traffic Volume and Speed",
+  //   "Projected Demand",
+  // ];
   // Helper to convert table data to CSV string
   function arrayToCSV(headers, rows) {
     const escape = (v) => `"${String(v).replace(/"/g, '""')}"`;
@@ -187,9 +188,9 @@ function ProjectedDemand({ activeStep }) {
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 rounded">
-          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
-            <span className="mr-2">Upload</span> Projected Demand
-            <CloudUpload className="ml-2 w-5 h-5" />
+          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 h-[32px] rounded cursor-pointer whitespace-nowrap gap-2">
+            <span>Upload Projected Demand</span>
+            <CloudUpload className="w-5 h-5" />
             <input
               type="file"
               accept=".xlsx,.xls,.csv"
@@ -205,40 +206,60 @@ function ProjectedDemand({ activeStep }) {
           </label>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">Year</label>
+            <label className="text-xs font-medium text-gray-600">Base Year</label>
+            <input
+              type="text"
+              value={classificationState.baseYear || ""}
+              readOnly
+              className="border rounded px-2 py-1 w-20 h-[32px] bg-gray-200 text-gray-700"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Select Year</label>
             <select
-              value={penetrationState.projectedYear}
-              disabled
-              className="border rounded px-2 py-1 w-20 h-[32px]"
+              value={penetrationState.projectedYear || ""}
+              onChange={e => {
+                setProjectedDemandState({ projectedYear: e.target.value });
+                setShowTable(false);
+              }}
+              className="border rounded px-2 py-1 w-24 h-[32px]"
             >
+              <option value="">Select</option>
               {classificationState.baseYear &&
-                Array.from(
-                  { length: 6 },
-                  (_, i) => parseInt(classificationState.baseYear) + i
-                ).map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
+                Array.from({ length: 5 }, (_, i) => parseInt(classificationState.baseYear) + i + 1)
+                  .map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
             </select>
           </div>
 
-          <div className="flex flex-col gap-1">
+
+          <div className="flex flex-col gap-1 w-full">
             <label className="text-xs font-medium text-gray-600">City</label>
-            <select
-              value={city}
-              disabled
-              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-25 ${
-                theme === "dark" ? "border-gray-700" : "border-white"
-              }`}
-            >
-              <option value="">City</option>
-              {statesList.slice(1).map((st) => (
-                <option key={st} value={st}>
-                  {st}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <select
+                value={city}
+                disabled
+                className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-48 ${
+                  theme === "dark" ? "border-gray-700" : "border-white"
+                }`}
+              >
+                <option value="">City</option>
+                {statesList.slice(1).map((st) => (
+                  <option key={st} value={st}>
+                    {st}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded"
+                disabled={!penetrationState.projectedYear}
+                onClick={() => setShowTable(true)}
+              >
+                Estimate Speed
+              </button>
+            </div>
           </div>
         </form>
         {srcImg ? (
@@ -248,39 +269,38 @@ function ProjectedDemand({ activeStep }) {
             className="w-full max-h-[350px] ma object-contain rounded"
           />
         ) : null}
-        {projectedDemandState.projectedTrafficVolumeData.length ? (
+        {showTable && projectedDemandState.projectedTrafficVolumeData.length ? (
           <div>
-          <div className="bg-[#f7f7f9] text-[#222222] text-center box-border rounded font-semibold border border-solid border-[#cccccc]">
-            <span>Projected Increase In Traffic Volumes</span>
-          </div >
+            <div className="bg-[#f7f7f9] text-[#222222] text-center box-border rounded font-semibold border border-solid border-[#cccccc]">
+              <span>Projected Increase In Traffic Volumes</span>
+            </div>
             <HotTable
-            className="min-w-[60%] overflow-auto"
-            style={{ minHeight: 500 }}
-            data={projectedDemandState.projectedTrafficVolumeData}
-            colHeaders={projectedDemandState.projectedTrafficVolumeHeaders}
-            rowHeaders
-            stretchH="all"
-            licenseKey="non-commercial-and-evaluation"
-            themeName={
-              theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
-            }
-            pagination={false}
-            renderPagination={false}
-            // Remove navigation arrows by disabling pagination UI
-          />
+              className="min-w-[60%] overflow-auto"
+              style={{ minHeight: 500 }}
+              data={projectedDemandState.projectedTrafficVolumeData}
+              colHeaders={projectedDemandState.projectedTrafficVolumeHeaders}
+              rowHeaders
+              stretchH="all"
+              licenseKey="non-commercial-and-evaluation"
+              themeName={
+                theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
+              }
+              pagination={false}
+              renderPagination={false}
+            />
           </div>
-
         ) : (
           <div className="min-w-[60%] flex items-center justify-center h-[500px] text-gray-500">
-            No data
+            {!penetrationState.projectedYear
+              ? "Select a year and click Estimate Speed to view data"
+              : !showTable
+                ? "Click Estimate Speed to view data"
+                : "No data"}
           </div>
         )}
         <TractParametersTable trafficState={trafficState} />
       </div>
       <div className="flex flex-col gap-6">
-        <div className="ml-4">
-          <VehicleStepper activeStep={activeStep} steps={verticalSteps} />
-        </div>
         {city && (
           <img
             src={cityImages[city]}

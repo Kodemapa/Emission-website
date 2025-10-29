@@ -46,16 +46,19 @@ function AnalysisStepper({ finalNext }) {
 
   return (
     <div className="flex flex-col items-center gap-5 pl-6 pt-4">
-      {/* Step-wise content */}
+      {/* Step-wise content only, stepper UI removed */}
       <div className="w-full">
         {activeStep === 0 && (
           <EnergyConsumptionAndEmissionRates activeStep={activeStep} userSelections={userSelections} />
         )}
-        {activeStep === 1 && <GridEmissionRates activeStep={activeStep} />}
+        {activeStep === 1 && (
+          <GridEmissionRates activeStep={activeStep} />
+        )}
       </div>
 
       {/* Navigation Buttons */}
       <Stack direction="row" spacing={1}>
+        
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
           onClick={handleNext}

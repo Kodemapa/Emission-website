@@ -185,6 +185,7 @@ function VehiclePenetration({ activeStep }) {
     setPenetrationState,
   ]);
 
+  const fileInputRef = React.useRef();
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -205,15 +206,18 @@ function VehiclePenetration({ activeStep }) {
         setPenetrationState({
           penetrationHeaders: headers,
           allPenetrationData: rows, // store original, unfiltered rows
-          // penetrationData will be derived in useEffect
+          penetrationFile: file,
         });
       } else {
         setPenetrationState({
           penetrationHeaders: [],
           allPenetrationData: [],
           penetrationData: [],
+          penetrationFile: null,
         });
       }
+      // Reset file input so the same file can be uploaded again after year change
+      if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
     if (file.name.toLowerCase().endsWith(".csv")) reader.readAsText(file);
@@ -221,7 +225,7 @@ function VehiclePenetration({ activeStep }) {
   };
 
   return (
-    <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
+  <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 rounded">
           <label
@@ -238,26 +242,48 @@ function VehiclePenetration({ activeStep }) {
               accept=".xlsx, .xls, .csv"
               onChange={handleFileChange}
               className="hidden"
+              ref={fileInputRef}
             />
           </label>
+
+          {/* Base Year Dropdown (disabled) */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Base Year</label>
+            <select
+              value={classificationState.baseYear || ""}
+              disabled
+              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-20 h-[32px] ${
+                theme === "dark" ? "border-gray-700" : "border-white"
+              }`}
+            >
+              <option>{classificationState.baseYear || "Base Year"}</option>
+            </select>
+          </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-gray-600">Year</label>
             <select
-              value={penetrationState.projectedYear}
-              onChange={(e) =>
-                setPenetrationState({ projectedYear: e.target.value })
-              }
+              value={penetrationState.projectedYear || ""}
+              onChange={(e) => {
+                setPenetrationState({
+                  projectedYear: e.target.value,
+                  penetrationHeaders: [],
+                  allPenetrationData: [],
+                  penetrationData: [],
+                  penetrationFile: null,
+                });
+              }}
               className={`border rounded px-2 py-1 w-20 h-[32px] ${
                 theme === "dark"
                   ? "bg-[#18181b] text-white border-gray-700"
                   : ""
               }`}
             >
+              <option value="" disabled>Select a year</option>
               {classificationState.baseYear &&
                 Array.from(
-                  { length: 6 },
-                  (_, i) => parseInt(classificationState.baseYear, 10) + i
+                  { length: 5 },
+                  (_, i) => parseInt(classificationState.baseYear, 10) + i + 1
                 ).map((year) => (
                   <option key={year} value={year}>
                     {year}
@@ -276,7 +302,7 @@ function VehiclePenetration({ activeStep }) {
                 setClassificationState({ vehicleType: e.target.value })
               }
               disabled={classificationState.city === ""}
-              className={`border rounded px-2 py-1 w-32 transition-colors duration-300 ${
+              className={`border rounded px-2 py-1 w-70 transition-colors duration-300 ${
                 theme === "dark"
                   ? "bg-[#18181b] text-white border-gray-700"
                   : "bg-white text-black border-gray-300"
@@ -314,7 +340,7 @@ function VehiclePenetration({ activeStep }) {
             <label className="text-xs font-medium text-gray-600">City</label>
             <select
               disabled
-              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-25 ${
+              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-32 ${
                 theme === "dark" ? "border-gray-700" : "border-white"
               }`}
             >
@@ -324,7 +350,7 @@ function VehiclePenetration({ activeStep }) {
         </form>
 
         {penetrationState.penetrationData?.length > 0 ? (
-          <div className="flex-1 min-w-[60%] overflow-auto">
+          <div className="flex-1 min-w-[60%] overflow-auto" style={{ minHeight: 480, maxHeight: 480 }}>
             <div className="flex items-center justify-end mb-2">
               <label className="mr-2 font-semibold">Rows per page:</label>
               <select
@@ -344,7 +370,7 @@ function VehiclePenetration({ activeStep }) {
               colHeaders={penetrationState.penetrationHeaders}
               rowHeaders
               stretchH="all"
-              height="600px"
+              height={350}
               width="100%"
               licenseKey="non-commercial-and-evaluation"
               themeName={
@@ -358,7 +384,7 @@ function VehiclePenetration({ activeStep }) {
                 disabled={currentPage === 0}
                 type="button"
               >
-                <i class="bi bi-chevron-left"></i>
+                <i className="bi bi-chevron-left"></i>
               </button>
               <span className="px-2 py-2 font-semibold">
                 Page {currentPage + 1} of {totalPages}
@@ -369,7 +395,7 @@ function VehiclePenetration({ activeStep }) {
                 disabled={currentPage >= totalPages - 1}
                 type="button"
               >
-                <i class="bi bi-chevron-right"></i>
+                <i className="bi bi-chevron-right"></i>
               </button>
             </div>
           </div>
@@ -381,9 +407,6 @@ function VehiclePenetration({ activeStep }) {
       </div>
 
       <div className="flex flex-col gap-6">
-        <div className="ml-4">
-          <VehicleStepper activeStep={activeStep} steps={verticalSteps} />
-        </div>
         {classificationState.city && cityImages[classificationState.city] && (
           <img
             src={cityImages[classificationState.city]}

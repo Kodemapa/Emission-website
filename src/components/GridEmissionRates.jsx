@@ -21,14 +21,14 @@ import {
 import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
 
-const GridEmissionRates = ({ activeStep }) => {
+const GridEmissionRates = ({ activeStep, isResults }) => {
   const classificationState = useAppStore((state) => state.classificationState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
   const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
   const steps = [
     "Vehicle Energy Consumption and Emission Rates",
-    " Grid Emission Rates",
+    "Grid Emission Rates",
   ];
 
   const scenarios = [
@@ -187,7 +187,7 @@ const GridEmissionRates = ({ activeStep }) => {
 
       <div className="flex flex-col gap-6">
         <div className="ml-4 flex items-center gap-4">
-          <VehicleStepper activeStep={activeStep} steps={steps} />
+          <VehicleStepper activeStep={isResults ? 1 : (typeof activeStep === 'number' ? activeStep : 0)} steps={steps} />
           <img
             src="src/assets/Logo2.jpg"
             alt="NREL Cambium"

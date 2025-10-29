@@ -10,6 +10,17 @@ import { create } from "zustand";
  */
 const useAppStore = create((set, get) => ({
   // ------------------------------
+  // Notification slice
+  // ------------------------------
+  notifications: [],
+  addNotification: (text) =>
+    set((state) => ({
+      notifications: [
+        ...state.notifications.slice(-3), // keep last 3, add new for max 4
+        { id: Date.now(), text, at: Date.now() },
+      ],
+    })),
+  // ------------------------------
   // Classification slice
   // ------------------------------
   classificationState: {

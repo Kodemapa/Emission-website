@@ -1,3 +1,4 @@
+import VehicleStepper from "./VerticalStepper";
 
 import React, { useState } from "react";
 import InputStepper from "./InputStepper";
@@ -6,7 +7,19 @@ import useAppStore from '../useAppStore';
 import { toast } from "react-toastify";
 import FinalResultsPage from "./FinalResultsPage";
 export default function ArrowStepper() {
+  const inputSteps = [
+    "Vehicle Classification Data",
+    "Projected Vehicle Penetration Rate Data",
+    "Traffic Volume and Speed",
+    "Projected Demand",
+  ];
+  const analysisSteps = [
+    "Vehicle Energy Consumption and Emission Rates",
+    "Grid Emission Rates"
+  ];
   const [activeStep, setActiveStep] = useState(-1);
+  // Track sub-step for Input Data
+  const [inputSubStep, setInputSubStep] = useState(0);
   const steps = ["Input Data", "Analysis", "Results"];
 
   const handleStart = () => setActiveStep(0);
@@ -63,10 +76,9 @@ export default function ArrowStepper() {
 
   return (
     <div
-      className="arrow-stepper flex flex-col items-center gap-8 p-6"
+      className="arrow-stepper flex flex-col gap-8 p-6"
       style={{ minHeight: "calc(100vh - 185px)" }}
     >
-      {/* Scoped CSS (no styled-jsx) */}
       <style>{`
         .arrow-stepper { --arrow: 20px; --border-width: 4px; }
         .clip-path-first {
@@ -202,23 +214,44 @@ export default function ArrowStepper() {
         }
       `}</style>
 
-      {/* Stepper Header */}
-      <div className="flex justify-center items-center gap-4">
+      {/* Top row: arrow stepper and vertical stepper side by side */}
+      <div className={`flex flex-row items-start gap-16 w-full justify-center ${activeStep !== -1 ? 'pl-56' : 'pl-8'}`}>
+        {/* Arrow stepper */}
         <div className="flex items-center gap-4">
           {steps.map((step, index) => (
             <div key={step} className={getStepStyle(index) + " min-w-[180px]"}>
               <span>{step}</span>
             </div>
           ))}
+          {/* Start button beside Results */}
+          {activeStep === -1 && (
+            <button
+              onClick={handleStart}
+              className="ml-8 px-8 py-3 bg-blue-400 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors"
+            >
+              Start
+            </button>
+          )}
         </div>
-
-        {activeStep === -1 && (
-          <button
-            onClick={handleStart}
-            className="px-8 py-3 bg-blue-400 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors"
-          >
-            Start
-          </button>
+        {/* Vertical stepper: only show after Start is clicked */}
+        {activeStep !== -1 && (
+          <div>
+            {(() => {
+              let stepperActiveStep = 0;
+              let stepperSteps = inputSteps;
+              if (activeStep === 0) {
+                stepperActiveStep = inputSubStep;
+                stepperSteps = inputSteps;
+              } else if (activeStep === 1) {
+                stepperActiveStep = 0;
+                stepperSteps = analysisSteps;
+              } else if (activeStep === 2) {
+                stepperActiveStep = 1;
+                stepperSteps = analysisSteps;
+              }
+              return <VehicleStepper activeStep={stepperActiveStep} steps={stepperSteps} />;
+            })()}
+          </div>
         )}
       </div>
 
@@ -227,19 +260,8 @@ export default function ArrowStepper() {
         <div className="flex flex-row items-center gap-4 p-4 bg-white">
           <InputStepper
             finalNext={handleNext}
-            hideNavigation={false}
-            customNavButton={({ activeStep: inputStep, steps: inputSteps }) =>
-              inputStep === inputSteps.length - 1 ? (
-                <div className="flex gap-4 justify-center mt-6">
-                  <button
-                    onClick={handleNext}
-                    className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                  >
-                    Go to Analysis
-                  </button>
-                </div>
-              ) : null
-            }
+            activeStep={inputSubStep}
+            setActiveStep={setInputSubStep}
           />
         </div>
       )}
@@ -264,8 +286,8 @@ export default function ArrowStepper() {
         </div>
       )}
       {activeStep === 2 && (
-        <div>
-          <FinalResultsPage></FinalResultsPage>
+        <div className="flex flex-row items-center gap-4 p-4 bg-white">
+          <GridEmissionRates isResults />
         </div>
       )}
 

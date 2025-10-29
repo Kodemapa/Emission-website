@@ -1,28 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import useAppStore from "../useAppStore"; // adjust path if needed
-
-const STATIC_NOTIFICATIONS = [
-  {
-    id: 1,
-    text: "Processed the projected demand",
-    at: Date.now() - 5 * 60 * 1000,
-  },
-  {
-    id: 2,
-    text: "Analysed and generated the projected demand",
-    at: Date.now() - 45 * 60 * 1000,
-  },
-  {
-    id: 3,
-    text: "Graphs generated for the projected demand",
-    at: Date.now() - 3 * 60 * 60 * 1000,
-  },
-  {
-    id: 4,
-    text: "Analysis completed for the projected demand",
-    at: Date.now() - 26 * 60 * 60 * 1000,
-  },
-];
+import useAppStore from "../useAppStore";
 
 function timeAgo(ts) {
   const s = Math.max(1, Math.floor((Date.now() - ts) / 1000));
@@ -66,6 +43,7 @@ const Notifications = () => {
   const itemHover = isDark ? "hover:bg-white/5" : "hover:bg-gray-50";
   const timeTheme = isDark ? "text-zinc-400" : "text-gray-500";
 
+  const notifications = useAppStore((s) => s.notifications);
   return (
     <div className="relative w-full" ref={wrapperRef}>
       <button
@@ -87,7 +65,7 @@ const Notifications = () => {
           className={`absolute left-0 right-0 mt-1 rounded-md border z-50 transition-colors duration-300 ${menuTheme}`}
         >
           <ul className="max-h-80 overflow-auto py-1">
-            {STATIC_NOTIFICATIONS.map((n) => (
+            {notifications.slice().reverse().map((n) => (
               <li key={n.id} role="menuitem">
                 <div
                   className={`px-3 py-2 flex items-start justify-between gap-3 ${itemHover}`}

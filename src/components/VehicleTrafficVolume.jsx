@@ -26,6 +26,8 @@ function VehicleTrafficVolume({ activeStep }) {
   const trafficState = useAppStore((s) => s.trafficVolumeState);
   const setTrafficState = useAppStore((s) => s.setTrafficVolumeState);
   const [calculatedSpeeds, setCalculatedSpeeds] = React.useState([]);
+  // Show data/results only after Estimate Speed is clicked
+  const [showResults, setShowResults] = React.useState(false);
 
   // Submit data to backend
   const handleNext = async () => {
@@ -93,12 +95,7 @@ function VehicleTrafficVolume({ activeStep }) {
     Seattle: SeattleTF,
     NewYork: NewYorkTF,
   };
-  const verticalSteps = [
-    "Vehicle Classification Data",
-    "Projected Vehicle Penetration Rate Data",
-    "Traffic Volume and Speed",
-    "Projected Demand",
-  ];
+
 
   const loadSheet = (file, type) => {
     const reader = new FileReader();
@@ -193,7 +190,7 @@ function VehicleTrafficVolume({ activeStep }) {
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 rounded">
-          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
+          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 min-w-[200px] justify-center">
             <span className="mr-2">Upload</span> Traffic Volume
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
@@ -203,7 +200,7 @@ function VehicleTrafficVolume({ activeStep }) {
               className="hidden"
             />
           </label>
-          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 py-2 rounded cursor-pointer h-[32px]">
+          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 min-w-[220px] justify-center">
             <span className="mr-2">Upload</span> MFD Parameters
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
@@ -213,12 +210,25 @@ function VehicleTrafficVolume({ activeStep }) {
               className="hidden"
             />
           </label>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 items-center">
+            <label className="text-xs font-medium text-gray-600">Base Year</label>
+            <select
+              value={classificationState.baseYear}
+              disabled
+              className="bg-gray-200 text-gray-600 rounded px-2 h-10 w-24 border border-gray-300 font-semibold text-base"
+            >
+              <option value="">Base Year</option>
+              {classificationState.baseYear && (
+                <option value={classificationState.baseYear}>{classificationState.baseYear}</option>
+              )}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1 items-center">
             <label className="text-xs font-medium text-gray-600">City</label>
             <select
               value={classificationState.cityInput}
               disabled
-              className={`bg-gray-300 text-gray-600 rounded px-2 py-1 w-25 `}
+              className="bg-gray-200 text-gray-600 rounded px-2 h-10 w-32 border border-gray-300 font-semibold text-base"
             >
               <option value="">City</option>
               {statesList.slice(1).map((st) => (
@@ -228,19 +238,18 @@ function VehicleTrafficVolume({ activeStep }) {
               ))}
             </select>
           </div>
+          <button
+            type="button"
+            className="px-6 py-2 bg-blue-500 text-white rounded font-semibold h-10 min-w-[140px] hover:bg-blue-600"
+            onClick={() => setShowResults(true)}
+          >
+            Estimate Speed
+          </button>
         </form>
 
-        {/* Submit button for uploading traffic data */}
-        {(hasTrafficVolumeData || hasMFTParametersData) && (
+        {/* Show data/results only after Estimate Speed is clicked */}
+        {showResults && (hasTrafficVolumeData || hasMFTParametersData) && (
           <>
-            {/*
-            <button
-              className="bg-green-500 text-white px-4 py-2 rounded w-40"
-              onClick={handleCalculateSpeed}
-            >
-              Calculate Speed
-            </button>
-            */}
             {srcImg ? (
               <img
                 src={srcImg}
@@ -248,81 +257,12 @@ function VehicleTrafficVolume({ activeStep }) {
                 className="w-full max-h-[350px] ma object-contain rounded"
               />
             ) : null}
-            {/* Table for Traffic Volume */}
-            {/* {hasTrafficVolumeData && (
-              <div className="overflow-auto max-h-96 mt-4">
-                <div className="font-semibold text-lg mb-2">Traffic Volume Table</div>
-                <table className="border w-full">
-                  <thead>
-                    <tr>
-                      {trafficState.trafficVolumeHeaders && trafficState.trafficVolumeHeaders.map((header, idx) => (
-                        <th key={idx} className="border px-2 py-1 bg-gray-100">{header}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {trafficState.trafficVolumeData.map((row, rowIdx) => (
-                      <tr key={rowIdx}>
-                        {row.map((cell, cellIdx) => (
-                          <td key={cellIdx} className="border px-2 py-1">{cell}</td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )} */}
-            {/* Table for MFT Parameters */}
+            {/* Show MFD Parameters Table only */}
             <TractParametersTable trafficState={trafficState} />
-            {/* {hasMFTParametersData && (
-              <div className="overflow-auto max-h-96 mt-4">
-                <div className="font-semibold text-lg mb-2">MFD Parameters Table</div>
-                <table className="border w-full">
-                  <thead>
-                    <tr>
-                      {trafficState.trafficMFTParametersHeaders && trafficState.trafficMFTParametersHeaders.map((header, idx) => (
-                        <th key={idx} className="border px-2 py-1 bg-gray-100">{header}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {trafficState.trafficMFTParametersData.map((row, rowIdx) => (
-                      <tr key={rowIdx}>
-                        {row.map((cell, cellIdx) => (
-                          <td key={cellIdx} className="border px-2 py-1">{cell}</td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )} */}
-            {/* Show calculated speeds if available */}
-            {/* {calculatedSpeeds.length > 0 && (
-              <table className="mt-4 border w-full">
-                <thead>
-                  <tr>
-                    <th className="border px-2 py-1">Distance (mi)</th>
-                    <th className="border px-2 py-1">Time (hr)</th>
-                    <th className="border px-2 py-1">Speed (mph)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {calculatedSpeeds.map((row, idx) => (
-                    <tr key={idx}>
-                      <td className="border px-2 py-1">{row.distance}</td>
-                      <td className="border px-2 py-1">{row.time}</td>
-                      <td className="border px-2 py-1">{row.speed}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )} */}
           </>
         )}
       </div>
       <div className="flex flex-col gap-6">
-        <VehicleStepper activeStep={activeStep} steps={verticalSteps} />
         {classificationState.city && (
           <img
             src={cityImages[classificationState.city]}
