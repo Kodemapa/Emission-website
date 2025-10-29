@@ -300,7 +300,7 @@ export default function ArrowStepper() {
           )}
           {activeStep === 2 && (
             <div className="flex flex-row items-center gap-4 p-4 bg-white">
-              <GridEmissionRates />
+              <FinalResultsPage />
             </div>
           )}
         </div>
