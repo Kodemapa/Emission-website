@@ -28,8 +28,7 @@ const Header = () => {
       <Link to={"/"} reloadDocument>
         <IconButton aria-label="home" style={{ background: 'transparent' }}>
           <HomeIcon
-            className={theme === "dark" ? "text-white" : "text-black"}
-            style={{ background: 'transparent' }}
+            style={{ color: '#1976d2', background: 'transparent' }} // MUI blue[700]
           />
         </IconButton>
       </Link>
@@ -67,7 +66,7 @@ const Header = () => {
           </label>
           <span
             className={`ml-2 text-sm font-medium uppercase transition-colors ${
-              theme === "dark" ? "text-white" : "text-black"
+              theme === "dark" ? "text-white" : "text-blue-700"
             }`}
           >
             {theme === "dark" ? "Dark mode" : "Light mode"}
