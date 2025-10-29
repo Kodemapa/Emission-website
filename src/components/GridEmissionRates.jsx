@@ -3,7 +3,7 @@ import Atlanta from "../assets/Georgia.svg";
 import LosAngeles from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
-import gridDataImg from "../assets/gridData.jpg";
+import gridDataImg from "../assets/image.png";
 import VehicleStepper from "./VerticalStepper";
 import AnalysisImage from "./AnalysisImage";
 import {
@@ -184,8 +184,8 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
           <img
             src={gridDataImg}
             alt="Grid Data"
-            className="h-[500px] object-contain rounded border border-gray-300 shadow-md"
-            style={{ maxWidth: '50%' }}
+            className="h-[200px] object-contain rounded border border-gray-100 "
+            style={{ maxWidth: '95%' }}
           />
         </div>
 
