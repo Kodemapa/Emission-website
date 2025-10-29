@@ -48,7 +48,6 @@ function VehicleStepper({ activeStep = 0, steps = [] }) {
   const theme = useAppStore((s) => s.theme);
   const isDark = theme === "dark";
 
-  const iconActive = isDark ? "#fff" : "#0a2f5c";
   const iconInactive = isDark ? "rgba(255,255,255,0.6)" : "#0a2f5c";
 
   // Calculate line height and offset so the line starts/ends at the center of the first/last icon
@@ -91,7 +90,7 @@ function VehicleStepper({ activeStep = 0, steps = [] }) {
                       {isActive ? (
                         // Completely filled dark circle for active (same size)
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                          <circle cx="12" cy="12" r="10" fill={iconInactive} />
+                          <circle cx="12" cy="12" r="10" fill="#0a2f5c" />
                         </svg>
                       ) : (
                         // Outlined circle for inactive

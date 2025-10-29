@@ -20,6 +20,8 @@ export default function ArrowStepper() {
   const [activeStep, setActiveStep] = useState(-1);
   // Track sub-step for Input Data
   const [inputSubStep, setInputSubStep] = useState(0);
+  // Track sub-step for Analysis
+  const [analysisSubStep, setAnalysisSubStep] = useState(0);
   const steps = ["Input Data", "Analysis", "Results"];
 
   const handleStart = () => setActiveStep(0);
@@ -243,7 +245,7 @@ export default function ArrowStepper() {
                 stepperActiveStep = inputSubStep;
                 stepperSteps = inputSteps;
               } else if (activeStep === 1) {
-                stepperActiveStep = 0;
+                stepperActiveStep = analysisSubStep;
                 stepperSteps = analysisSteps;
               } else if (activeStep === 2) {
                 stepperActiveStep = 1;
@@ -255,63 +257,73 @@ export default function ArrowStepper() {
         )}
       </div>
 
-      {/* Content */}
-      {activeStep === 0 && (
-        <div className="flex flex-row items-center gap-4 p-4 bg-white">
-          <InputStepper
-            finalNext={handleNext}
-            activeStep={inputSubStep}
-            setActiveStep={setInputSubStep}
-          />
+      {/* Unified row: navigation and step content aligned */}
+      <div className="flex flex-row items-start gap-4 w-full">
+        {/* Step Content (InputStepper, AnalysisStepper, GridEmissionRates) */}
+        <div className="flex-1">
+          {activeStep === 0 && (
+            <div className="flex flex-row items-center gap-4 p-4 bg-white">
+              <InputStepper
+                finalNext={handleNext}
+                activeStep={inputSubStep}
+                setActiveStep={setInputSubStep}
+              />
+            </div>
+          )}
+          {activeStep === 1 && (
+            <div className="flex flex-row items-center gap-4 p-4 bg-white">
+              <AnalysisStepper
+                finalNext={(direction) => {
+                  if (direction === 'back') {
+                    handleBack();
+                  } else {
+                    handleNext();
+                  }
+                }}
+                activeStep={analysisSubStep}
+                setActiveStep={setAnalysisSubStep}
+                hideNavigation={false}
+                customNavButton={({ activeStep: analysisStep, steps: analysisSteps }) =>
+                  analysisStep === analysisSteps.length - 1 ? (
+                    <div className="flex gap-4 justify-center mt-6">
+                      <button
+                        onClick={handleNext}
+                        className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                      >
+                        Go to Results
+                      </button>
+                    </div>
+                  ) : null
+                }
+              />
+            </div>
+          )}
+          {activeStep === 2 && (
+            <div className="flex flex-row items-center gap-4 p-4 bg-white">
+              <GridEmissionRates />
+            </div>
+          )}
         </div>
-      )}
-      {activeStep === 1 && (
-        <div className="flex flex-row items-center gap-4 p-4 bg-white">
-          <AnalysisStepper
-            finalNext={handleNext}
-            hideNavigation={false}
-            customNavButton={({ activeStep: analysisStep, steps: analysisSteps }) =>
-              analysisStep === analysisSteps.length - 1 ? (
-                <div className="flex gap-4 justify-center mt-6">
-                  <button
-                    onClick={handleNext}
-                    className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                  >
-                    Go to Results
-                  </button>
-                </div>
-              ) : null
-            }
-          />
-        </div>
-      )}
-      {activeStep === 2 && (
-        <div className="flex flex-row items-center gap-4 p-4 bg-white">
-          <GridEmissionRates isResults />
-        </div>
-      )}
-
-      {/* Navigation */}
-      {activeStep > 0 && activeStep < steps.length && (
-        <div className="flex gap-4 mt-4">
-          <button
-            onClick={handleBack}
-            className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
-          >
-            Back
-          </button>
-        </div>
-      )}
-      {activeStep === steps.length - 1 && (
-        <div className="flex gap-4 mt-4">
-          <button
-            onClick={() => setActiveStep(-1)}
-            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-          >
-            Reset
-          </button>
-        </div>
-      )}
+        {/* Navigation Buttons: Back/Reset, aligned with stepper */}
+        {/* <div className="flex flex-col justify-start gap-4 min-w-[120px]">
+          {activeStep > 0 && activeStep < steps.length && (
+            <button
+              onClick={handleBack}
+              className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+            >
+              Back
+            </button>
+          )}
+          {activeStep === steps.length - 1 && (
+            <button
+              onClick={() => setActiveStep(-1)}
+              className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+            >
+              Reset
+            </button>
+          )}
+        </div> */}
+      </div>
     </div>
   );
 }

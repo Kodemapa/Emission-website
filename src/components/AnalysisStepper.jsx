@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import EnergyConsumptionAndEmissionRates from "./EnergyConsumptionAndEmissionRates";
 import GridEmissionRates from "./GridEmissionRates";
 import IconButton from "@mui/material/IconButton";
@@ -14,8 +14,7 @@ const steps = [
 
 import useAppStore from "../useAppStore";
 
-function AnalysisStepper({ finalNext }) {
-  const [activeStep, setActiveStep] = useState(0);
+function AnalysisStepper({ finalNext, activeStep, setActiveStep }) {
 
   // Get all user selections from Zustand
   const classificationState = useAppStore((s) => s.classificationState);
@@ -41,6 +40,9 @@ function AnalysisStepper({ finalNext }) {
   const handleBack = () => {
     if (activeStep > 0) {
       setActiveStep((prev) => prev - 1);
+    } else if (typeof finalNext === 'function') {
+      // If on first analysis step, call parent to go back to previous main step
+      finalNext('back');
     }
   };
 
@@ -57,8 +59,15 @@ function AnalysisStepper({ finalNext }) {
       </div>
 
       {/* Navigation Buttons */}
-      <Stack direction="row" spacing={1}>
-        
+      <div className="flex flex-row gap-4 mt-4 w-full justify-center">
+
+          <button
+            onClick={handleBack}
+            className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+          >
+            Back
+          </button>
+
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
           onClick={handleNext}
@@ -74,7 +83,7 @@ function AnalysisStepper({ finalNext }) {
             Go to Results
           </button>
         )}
-      </Stack>
+      </div>
     </div>
   );
 }

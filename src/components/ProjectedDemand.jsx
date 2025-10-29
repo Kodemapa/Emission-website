@@ -91,6 +91,7 @@ function ProjectedDemand({ activeStep }) {
   const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const penetrationState = useAppStore((s) => s.penetrationState);
+  const setPenetrationState = useAppStore((s) => s.setPenetrationState);
   const projectedDemandState = useAppStore((s) => s.projectedDemandState);
   const setProjectedDemandState = useAppStore((s) => s.setProjectedDemandState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
@@ -215,11 +216,11 @@ function ProjectedDemand({ activeStep }) {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-gray-600">Select Year</label>
+            <label className="text-xs font-medium text-gray-600">Year</label>
             <select
               value={penetrationState.projectedYear || ""}
               onChange={e => {
-                setProjectedDemandState({ projectedYear: e.target.value });
+                setPenetrationState({ projectedYear: e.target.value });
                 setShowTable(false);
               }}
               className="border rounded px-2 py-1 w-24 h-[32px]"
