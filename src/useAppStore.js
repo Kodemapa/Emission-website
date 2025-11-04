@@ -60,6 +60,7 @@ const useAppStore = create((set, get) => ({
   // ------------------------------
   trafficVolumeState: {
     trafficVolumeFile: null,
+    trafficVolumeHeaders: [],
     trafficVolumeData: [],
     trafficMFTParametersFile: null,
     trafficMFTParametersData: [],

@@ -1,12 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import useAppStore from "../useAppStore";
 import VehicleClassification from "./VehicleClassification";
 import VehiclePenetration from "./VehiclePenetration";
 import VehicleTrafficVolume from "./VehicleTrafficVolume";
-import IconButton from "@mui/material/IconButton";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import Stack from "@mui/material/Stack";
 import ProjectedDemand from "./ProjectedDemand";
 import { toast } from "react-toastify";
 
@@ -38,145 +34,189 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
   const handleNext = async () => {
     const store = useAppStore.getState();
 
-    // Configuration for each step
-    const stepConfig = [
-      {
-        type: "vehicle_classification",
-        state: store.classificationState,
-        fileKey: "uploadedFile",
-        extraFields: {
-          main_city: store.classificationState.city || "",
-          year: store.classificationState.baseYear || "",
-          user_id: "1",
-        },
-      },
-      {
-        type: "penetration_rate",
-        state: store.penetrationState,
-        fileKey: "uploadedFile",
-        extraFields: {
-          main_city: store.penetrationState.city || "",
-          year: store.penetrationState.baseYear || "",
-          user_id: "1",
-        },
-      },
-      {
-        type: "traffic_volume",
-        state: store.trafficVolumeState,
-        fileKey: "uploadedFile",
-        extraFields: {
-          main_city: store.trafficVolumeState.city || "",
-          year: store.trafficVolumeState.baseYear || "",
-          user_id: "1",
-        },
-      },
-      {
-        type: "projected_traffic",
-        state: store.projectedDemandState,
-        fileKey: "uploadedFile",
-        extraFields: {
-          main_city: store.projectedDemandState.city || "",
-          year: store.projectedDemandState.baseYear || "",
-          user_id: "1",
-        },
-      },
-    ];
+    // Step 0: Vehicle Classification
+    if (activeStep === 0) {
+      const state = store.classificationState;
+      if (state && state.uploadedFile) {
+        const formData = new FormData();
+        formData.append("main_city", state.city || "");
+        formData.append("year", state.baseYear || "");
+        formData.append("user_id", "1");
+        formData.append("file", state.uploadedFile, state.uploadedFile.name);
 
-    const currentStep = stepConfig[activeStep];
+        const storedTransactionId =
+          localStorage.getItem("transaction_id") || "emission-analysis-2025";
+        formData.append("transaction_id", storedTransactionId);
 
-    // For vehicle classification, send one request with all data
-    if (
-      currentStep &&
-      currentStep.type === "vehicle_classification" &&
-      currentStep.state &&
-      currentStep.state[currentStep.fileKey]
-    ) {
-      const formData = new FormData();
-      // Add extra fields
-      Object.entries(currentStep.extraFields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-      // Add file
-      formData.append(
-        "file",
-        currentStep.state[currentStep.fileKey],
-        currentStep.state[currentStep.fileKey].name
-      );
-
-      try {
-        const res = await fetch(
-          `http://localhost:5003/upload/${currentStep.type}`,
-          {
-            method: "POST",
-            body: formData,
+        try {
+          const res = await fetch(
+            "http://localhost:5003/upload/vehicle_classification",
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
+          if (!res.ok) throw new Error("Failed to save table");
+          const data = await res.json();
+          console.log("Table saved:", data);
+          if (data.transaction_id && data.transaction_id !== "none") {
+            localStorage.setItem("transaction_id", data.transaction_id);
+            console.log("Transaction ID stored:", data.transaction_id);
           }
-        );
-        if (!res.ok) throw new Error("Failed to save table");
-        const data = await res.json();
-        console.log("Table saved:", data);
-        if (data.transaction_id && data.transaction_id !== "none") {
-          localStorage.setItem("transaction_id", data.transaction_id);
-          console.log("Transaction ID stored:", data.transaction_id);
-          setClassificationState({ transactionId: data.transaction_id });
-        } else {
-          console.warn(
-            "Transaction ID is missing or invalid:",
-            data.transaction_id
-          );
-          toast.error(
-            "Transaction ID not received from backend. Please try again."
-          );
+          lastSentDataRef.current = formData;
+          toast.success("Data uploaded successfully");
+        } catch (err) {
+          console.error("Upload error:", err);
+          toast.success("Data uploaded successfully (mocked)");
+          lastSentDataRef.current = formData;
         }
-        lastSentDataRef.current = formData;
-        toast.success("Data uploaded successfully");
-      } catch (err) {
-        // Mock successful response for development - suppress console errors
-        console.log(
-          "Backend not available - using mock response for development"
-        );
-        toast.success("Data uploaded successfully (mocked)");
-        lastSentDataRef.current = formData;
       }
-    } else if (
-      currentStep &&
-      currentStep.state &&
-      currentStep.state[currentStep.fileKey]
-    ) {
-      // For other steps, keep the original logic
+    }
+    
+    // Step 1: Penetration Rate - use component's handleNext if exported
+    else if (activeStep === 1) {
+      const state = store.penetrationState;
+      if (state && state.penetrationFile) {
+        const formData = new FormData();
+        formData.append("city", store.classificationState.city || "");
+        formData.append("base_year", store.classificationState.baseYear || "");
+        formData.append("vehicle_type", store.classificationState.vehicleType || "");
+        formData.append("projected_year", state.projectedYear || "");
+        
+        const storedTransactionId =
+          localStorage.getItem("transaction_id") || "emission-analysis-2025";
+        formData.append("transaction_id", storedTransactionId);
+        
+        formData.append("user_id", "1");
+        formData.append("file", state.penetrationFile);
+
+        try {
+          const res = await fetch(
+            "http://localhost:5003/upload/penetration_rate",
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
+          if (!res.ok) throw new Error("Upload failed");
+          const data = await res.json();
+          console.log("Backend response:", data);
+          toast.success("Data uploaded successfully!");
+        } catch (err) {
+          console.error("Upload error:", err);
+          toast.error("Upload failed: " + err.message);
+        }
+      }
+    }
+    
+    // Step 2: Traffic Volume - needs TWO files
+    else if (activeStep === 2) {
+      const state = store.trafficVolumeState;
+      const classState = store.classificationState;
+      
+      // Check if both files exist
+      if (!state.trafficVolumeFile || !state.trafficMFTParametersFile) {
+        toast.error("Please upload both Traffic Volume and MFD Parameters files");
+        return;
+      }
+
       const formData = new FormData();
-      Object.entries(currentStep.extraFields).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-      formData.append(
-        "file",
-        currentStep.state[currentStep.fileKey],
-        currentStep.state[currentStep.fileKey].name
-      );
+      formData.append("city_name", classState.city || classState.cityInput || "");
+      
+      const storedTransactionId =
+        localStorage.getItem("transaction_id") || "emission-analysis-2025";
+      formData.append("transaction_id", storedTransactionId);
+      
+      formData.append("file1", state.trafficVolumeFile);
+      formData.append("file2", state.trafficMFTParametersFile);
 
       try {
-        const res = await fetch(
-          `http://localhost:5003/upload/${currentStep.type}`,
-          {
+        console.log("Uploading to /upload/traffic_volume...");
+        const res = await fetch("http://localhost:5003/upload/traffic_volume", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Upload failed");
+        }
+
+        const data = await res.json();
+        console.log("Backend response:", data);
+        toast.success("Traffic data uploaded successfully!");
+
+        if (data.transaction_id) {
+          localStorage.setItem("transaction_id", data.transaction_id);
+        }
+      } catch (err) {
+        console.error("Upload error:", err);
+        toast.error("Upload failed: " + err.message);
+        return; // Don't proceed to next step on error
+      }
+    }
+    
+    // Step 3: Projected Demand
+    else if (activeStep === 3) {
+      const state = store.projectedDemandState;
+      const classState = store.classificationState;
+      const penState = store.penetrationState;
+      
+      if (state.projectedTrafficVolumeFile) {
+        const formData = new FormData();
+        
+        const city = classState.city || classState.cityInput || "";
+        const year = penState.projectedYear || classState.baseYear || "";
+        
+        formData.append("city_name", city);
+        formData.append("year", year);
+        
+        const storedTransactionId =
+          localStorage.getItem("transaction_id") || "emission-analysis-2025";
+        formData.append("transaction_id", storedTransactionId);
+        
+        // Send the original uploaded file
+        formData.append("file_csv", state.projectedTrafficVolumeFile);
+        
+        // Send the table data as JSON text (for file_table parameter)
+        if (state.projectedTrafficVolumeHeaders && state.projectedTrafficVolumeData) {
+          // Convert headers and data to array of objects (JSON format)
+          const headers = state.projectedTrafficVolumeHeaders;
+          const rows = state.projectedTrafficVolumeData;
+          const tableData = rows.map(row => {
+            const obj = {};
+            headers.forEach((header, index) => {
+              obj[header] = row[index];
+            });
+            return obj;
+          });
+          formData.append("file_table", JSON.stringify(tableData));
+        }
+
+        try {
+          const res = await fetch("http://localhost:5003/upload/projected_traffic", {
             method: "POST",
             body: formData,
+          });
+          if (!res.ok) throw new Error("Upload failed");
+          const respData = await res.json();
+          console.log("Backend response:", respData);
+          toast.success("Data uploaded successfully!");
+          
+          // Store transaction_id for later use
+          if (respData.transaction_id) {
+            localStorage.setItem("transaction_id", respData.transaction_id);
           }
-        );
-        if (!res.ok) throw new Error("Failed to save table");
-        const data = await res.json();
-        console.log("Table saved to backend:", data);
-        lastSentDataRef.current = formData;
-        toast.success("Data uploaded successfully");
-      } catch (err) {
-        console.error("Error saving table to backend:", err);
-        toast.error(`Failed to upload data: ${err.message}`);
+        } catch (err) {
+          console.error("Upload error:", err);
+          toast.error("Upload failed: " + err.message);
+        }
       }
     }
 
     // Step navigation
     if (activeStep < steps.length - 1) {
       setActiveStep((prev) => prev + 1);
-    } else if (steps.length === 4) {
-      finalNext();
     }
   };
 
@@ -217,7 +257,67 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
           {activeStep === steps.length - 1 && (
             <button
               className="bg-green-600 text-white px-4 py-2 rounded"
-              onClick={finalNext}
+              onClick={async () => {
+                // First save the projected demand data to database
+                const store = useAppStore.getState();
+                const state = store.projectedDemandState;
+                const classState = store.classificationState;
+                const penState = store.penetrationState;
+                
+                if (state.projectedTrafficVolumeFile) {
+                  const formData = new FormData();
+                  
+                  const city = classState.city || classState.cityInput || "";
+                  const year = penState.projectedYear || classState.baseYear || "";
+                  
+                  formData.append("city_name", city);
+                  formData.append("year", year);
+                  
+                  const storedTransactionId =
+                    localStorage.getItem("transaction_id") || "emission-analysis-2025";
+                  formData.append("transaction_id", storedTransactionId);
+                  
+                  // Send the original uploaded file
+                  formData.append("file_csv", state.projectedTrafficVolumeFile);
+                  
+                  // Send the table data as JSON text (for file_table parameter)
+                  if (state.projectedTrafficVolumeHeaders && state.projectedTrafficVolumeData) {
+                    // Convert headers and data to array of objects (JSON format)
+                    const headers = state.projectedTrafficVolumeHeaders;
+                    const rows = state.projectedTrafficVolumeData;
+                    const tableData = rows.map(row => {
+                      const obj = {};
+                      headers.forEach((header, index) => {
+                        obj[header] = row[index];
+                      });
+                      return obj;
+                    });
+                    formData.append("file_table", JSON.stringify(tableData));
+                  }
+
+                  try {
+                    const res = await fetch("http://localhost:5003/upload/projected_traffic", {
+                      method: "POST",
+                      body: formData,
+                    });
+                    if (!res.ok) throw new Error("Upload failed");
+                    const respData = await res.json();
+                    console.log("Backend response:", respData);
+                    toast.success("Data uploaded successfully!");
+                    
+                    // Store transaction_id for later use
+                    if (respData.transaction_id) {
+                      localStorage.setItem("transaction_id", respData.transaction_id);
+                    }
+                  } catch (err) {
+                    console.error("Upload error:", err);
+                    toast.error("Upload failed: " + err.message);
+                  }
+                }
+                
+                // Then navigate to analysis page
+                finalNext();
+              }}
             >
               Go to Analysis
             </button>

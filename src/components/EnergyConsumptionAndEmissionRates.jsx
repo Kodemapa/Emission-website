@@ -18,6 +18,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import annotationPlugin from 'chartjs-plugin-annotation';
 
 ChartJS.register(
   CategoryScale,
@@ -26,7 +27,8 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  annotationPlugin
 );
 
 const VEHICLE_TYPES = [
@@ -790,31 +792,31 @@ export default function EnergyConsumptionAndEmissionRates() {
               }}
             >
               <div
-                style={{ fontWeight: "bold", marginBottom: 12, fontSize: 20 }}
+                style={{ fontWeight: "bold", marginBottom: 6, fontSize: 16 }}
               >
                 Vehicle Types
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
                 {VEHICLE_TYPES.map((type, idx) => (
                   <div
                     key={type}
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      marginBottom: 4,
+                      marginBottom: 1,
                     }}
                   >
                     <span
                       style={{
                         display: "inline-block",
-                        width: 32,
+                        width: 20,
                         height: 2,
                         backgroundColor: getRandomColor(idx),
-                        marginRight: 14,
+                        marginRight: 8,
                         borderRadius: 1,
                       }}
                     />
-                    <span style={{ fontSize: 18, fontWeight: 500 }}>
+                    <span style={{ fontSize: 13, fontWeight: 500 }}>
                       {type}
                     </span>
                   </div>

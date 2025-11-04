@@ -1,7 +1,6 @@
 import React from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
-import { HotTable } from "@handsontable/react";
 import { registerAllModules } from "handsontable/registry";
 import useAppStore from "../useAppStore";
 import Atlanta from "../assets/Georgia.svg";
@@ -12,7 +11,6 @@ import "handsontable/dist/handsontable.full.min.css";
 import "handsontable/styles/handsontable.css";
 import "handsontable/styles/ht-theme-main.css";
 import "handsontable/styles/ht-theme-horizon.css";
-import VehicleStepper from "./VerticalStepper";
 import AtlantaTF from "../assets/TrafficVolumeGA.png";
 import LosAngelesTF from "../assets/TrafficVolumeCA.png";
 import SeattleTF from "../assets/TrafficVolumeWA.png";
@@ -21,15 +19,24 @@ import TractParametersTable from "./TractParametersTable";
 import { toast } from "react-toastify";
 registerAllModules();
 
-function VehicleTrafficVolume({ activeStep }) {
+function VehicleTrafficVolume() {
   const classificationState = useAppStore((s) => s.classificationState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
   const setTrafficState = useAppStore((s) => s.setTrafficVolumeState);
-  const [calculatedSpeeds, setCalculatedSpeeds] = React.useState([]);
+  
   // Show data/results only after Estimate Speed is clicked
   const [showResults, setShowResults] = React.useState(false);
 
-  // Submit data to backend
+  // Auto-show results if speed was estimated before (e.g., when navigating back from next page)
+  React.useEffect(() => {
+    // Only show results if the speedEstimated flag is set (meaning user clicked Estimate Speed before)
+    if (trafficState.speedEstimated) {
+      setShowResults(true);
+    }
+  }, [trafficState.speedEstimated]);
+
+  // Submit data to backend - called by parent component during step navigation
+  // eslint-disable-next-line no-unused-vars
   const handleNext = async () => {
     // Collect values
     const city =
@@ -51,7 +58,9 @@ function VehicleTrafficVolume({ activeStep }) {
 
     // Prepare FormData for backend
     const formData = new FormData();
-    formData.append("city_name", city); // Use city_name as expected by backend
+    formData.append("city_name", city);
+    formData.append("base_year", classificationState.baseYear || "");
+    formData.append("vehicle_type", classificationState.vehicleType || "");
 
     // Add transaction_id from localStorage or default
     const storedTransactionId =
@@ -88,7 +97,12 @@ function VehicleTrafficVolume({ activeStep }) {
   };
 
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
-  const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
+  const cityImages = { 
+    Atlanta, 
+    "Los Angeles": LosAngeles, 
+    Seattle, 
+    NewYork 
+  };
   const trafficVolumeImages = {
     Atlanta: AtlantaTF,
     "Los Angeles": LosAngelesTF,
@@ -98,6 +112,8 @@ function VehicleTrafficVolume({ activeStep }) {
 
 
   const loadSheet = (file, type) => {
+    if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = e.target.result;
@@ -106,33 +122,37 @@ function VehicleTrafficVolume({ activeStep }) {
         : XLSX.read(data, { type: "binary" });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const parsed = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      
       if (type === "trafficVolume") {
-        if (parsed.length)
+        if (parsed.length) {
           setTrafficState({
             trafficVolumeHeaders: parsed[0],
             trafficVolumeData: parsed.slice(1),
             trafficVolumeFile: file,
           });
-        else
+        } else {
           setTrafficState({
             trafficVolumeHeaders: [],
             trafficVolumeData: [],
             trafficVolumeFile: file,
           });
+        }
       } else if (type === "mftParameters") {
-        if (parsed.length)
+        if (parsed.length) {
           setTrafficState({
             trafficMFTParametersHeaders: parsed[0],
             trafficMFTParametersData: parsed.slice(1),
             trafficMFTParametersFile: file,
           });
-        else
+        } else {
           setTrafficState({
             trafficMFTParametersHeaders: [],
             trafficMFTParametersData: [],
             trafficMFTParametersFile: file,
           });
+        }
       }
+      
       // Print variable in console after upload
       const city =
         (classificationState.city ?? classificationState.cityInput) || "";
@@ -150,30 +170,11 @@ function VehicleTrafficVolume({ activeStep }) {
         values
       );
     };
+    
     file.name.endsWith(".csv")
       ? reader.readAsText(file)
       : reader.readAsBinaryString(file);
   };
-
-  // Calculate speed when user clicks the button
-  /*const handleCalculateSpeed = () => {
-    const data = trafficState.trafficMFTParametersData || [];
-    const headers = trafficState.trafficMFTParametersHeaders || [];
-    // Try to find columns for distance and time
-    const distanceIdx = headers.findIndex(h => /distance/i.test(h));
-    const timeIdx = headers.findIndex(h => /time/i.test(h));
-    if (distanceIdx === -1 || timeIdx === -1) {
-      toast.error("CSV must have 'distance' and 'time' columns.");
-      return;
-    }
-    const speeds = data.map(row => {
-      const distance = parseFloat(row[distanceIdx]);
-      const time = parseFloat(row[timeIdx]);
-      const speed = time > 0 ? (distance / time) : 0;
-      return { distance, time, speed: speed.toFixed(2) };
-    });
-    setCalculatedSpeeds(speeds);
-  };*/
 
   const city =
     (classificationState.city ?? classificationState.cityInput) || "";
@@ -240,21 +241,26 @@ function VehicleTrafficVolume({ activeStep }) {
           </div>
           <button
             type="button"
-            className="px-6 py-2 bg-blue-500 text-white rounded font-semibold h-10 min-w-[140px] hover:bg-blue-600"
-            onClick={() => setShowResults(true)}
+            className="px-6 py-2 bg-blue-500 text-white rounded font-semibold h-10 min-w-[140px] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => {
+              setShowResults(true);
+              // Mark that speed has been estimated
+              setTrafficState({ speedEstimated: true });
+            }}
+            disabled={!hasTrafficVolumeData && !hasMFTParametersData}
           >
             Estimate Speed
           </button>
         </form>
 
-        {/* Show data/results only after Estimate Speed is clicked */}
-        {showResults && (hasTrafficVolumeData || hasMFTParametersData) && (
+        {/* Show data/results only after Estimate Speed is clicked AND speedEstimated flag is set */}
+        {showResults && trafficState.speedEstimated && (
           <>
             {srcImg ? (
               <img
                 src={srcImg}
                 alt={city}
-                className="w-full max-h-[350px] ma object-contain rounded"
+                className="w-full max-h-[350px] object-contain rounded"
               />
             ) : null}
             {/* Show MFD Parameters Table only */}
@@ -274,5 +280,67 @@ function VehicleTrafficVolume({ activeStep }) {
     </div>
   );
 }
+
+// Export handleNext for parent component to call when navigating to next step
+VehicleTrafficVolume.handleNext = function(classificationState, trafficState) {
+  return (async () => {
+    // Collect values
+    const city =
+      (classificationState.city ?? classificationState.cityInput) || "";
+    const trafficVolumeFile = trafficState.trafficVolumeFile || null;
+    const mftParametersFile = trafficState.trafficMFTParametersFile || null;
+    const values = {
+      city,
+      trafficVolumeFile: trafficVolumeFile ? trafficVolumeFile.name : null,
+      mftParametersFile: mftParametersFile ? mftParametersFile.name : null,
+    };
+    console.log("Traffic Volume and Speed upload values (on Next):", values);
+
+    // Check if both files are selected
+    if (!trafficVolumeFile || !mftParametersFile) {
+      toast.error("Please select both Traffic Volume and MFT Parameters files");
+      return;
+    }
+
+    // Prepare FormData for backend
+    const formData = new FormData();
+    formData.append("city_name", city);
+    formData.append("base_year", classificationState.baseYear || "");
+    formData.append("vehicle_type", classificationState.vehicleType || "");
+
+    // Add transaction_id from localStorage or default
+    const storedTransactionId =
+      localStorage.getItem("transaction_id") || "emission-analysis-2025";
+    formData.append("transaction_id", storedTransactionId);
+
+    formData.append("file1", trafficVolumeFile);
+    formData.append("file2", mftParametersFile);
+
+    try {
+      console.log("Uploading to /upload/traffic_volume...");
+      const res = await fetch("http://localhost:5003/upload/traffic_volume", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Upload failed");
+      }
+
+      const data = await res.json();
+      console.log("Backend response:", data);
+      toast.success("Traffic data uploaded successfully!");
+
+      // Store transaction_id for later use
+      if (data.transaction_id) {
+        localStorage.setItem("transaction_id", data.transaction_id);
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast.error("Upload failed: " + err.message);
+    }
+  })();
+};
 
 export default VehicleTrafficVolume;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
 import { HotTable } from "@handsontable/react";
@@ -19,7 +19,7 @@ import TrafficLegend from "../assets/TrafficLegend.jpg";
 // Register Handsontable modules
 registerAllModules();
 
-function ProjectedDemand({ activeStep }) {
+function ProjectedDemand() {
   const [showTable, setShowTable] = useState(false);
   const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
@@ -28,6 +28,14 @@ function ProjectedDemand({ activeStep }) {
   const projectedDemandState = useAppStore((s) => s.projectedDemandState);
   const setProjectedDemandState = useAppStore((s) => s.setProjectedDemandState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
+
+  // Auto-show table if speed was estimated before (e.g., when navigating back from next page)
+  useEffect(() => {
+    // Only show results if the speedEstimated flag is set (meaning user clicked Estimate Speed before)
+    if (projectedDemandState.speedEstimated) {
+      setShowTable(true);
+    }
+  }, [projectedDemandState.speedEstimated]);
 
   // --- Helper Functions Moved Inside Component ---
 
@@ -41,8 +49,8 @@ function ProjectedDemand({ activeStep }) {
     return csvRows.join("\n");
   }
 
-  // NOTE: This function is still not used by any button in this component.
-  // Your parent component probably calls this.
+  // Submit data to backend - called by parent component during step navigation
+  // eslint-disable-next-line no-unused-vars
   const handleNext = async () => {
     // Collect values using mapped city name
     const city =
@@ -74,7 +82,9 @@ function ProjectedDemand({ activeStep }) {
     // Prepare FormData for backend
     const formData = new FormData();
     formData.append("city_name", city);
-    formData.append("year", year);
+    formData.append("base_year", classificationState.baseYear || "");
+    formData.append("vehicle_type", classificationState.vehicleType || "");
+    formData.append("projected_year", year);
 
     // Add transaction_id from localStorage or default
     const storedTransactionId =
@@ -93,7 +103,13 @@ function ProjectedDemand({ activeStep }) {
       const respData = await res.json();
       console.log("Backend response:", respData);
       toast.success("Data uploaded successfully!");
+      
+      // Store transaction_id for later use
+      if (respData.transaction_id) {
+        localStorage.setItem("transaction_id", respData.transaction_id);
+      }
     } catch (err) {
+      console.error("Upload error:", err);
       toast.error("Upload failed: " + err.message);
     }
   };
@@ -101,6 +117,8 @@ function ProjectedDemand({ activeStep }) {
   // --- File and Image Logic ---
 
   const loadSheet = (file, keyHeaders, keyData) => {
+    if (!file) return;
+    
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = e.target.result;
@@ -109,11 +127,14 @@ function ProjectedDemand({ activeStep }) {
         : XLSX.read(data, { type: "binary" });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const parsed = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      
       if (parsed.length) {
         setProjectedDemandState({
           [keyHeaders]: parsed[0],
           [keyData]: parsed.slice(1),
+          projectedTrafficVolumeFile: file,
         });
+        
         // Print variable in console after upload using mapped city name
         const city =
           cityNameMapping[classificationState.city] ||
@@ -134,17 +155,17 @@ function ProjectedDemand({ activeStep }) {
           file: file ? file.name : null,
         });
       } else {
-        setProjectedDemandState({ [keyHeaders]: [], [keyData]: [] });
+        setProjectedDemandState({ 
+          [keyHeaders]: [], 
+          [keyData]: [],
+          projectedTrafficVolumeFile: null,
+        });
       }
     };
+    
     file.name.endsWith(".csv")
       ? reader.readAsText(file)
       : reader.readAsBinaryString(file);
-    setProjectedDemandState({
-      [file === projectedDemandState.projectedTrafficVolumeFile
-        ? "projectedTrafficVolumeFile"
-        : "projectedTrafficVolumeFile"]: file,
-    });
   };
 
   // Helper to map city to image file base name
@@ -238,7 +259,9 @@ function ProjectedDemand({ activeStep }) {
               value={penetrationState.projectedYear || ""}
               onChange={e => {
                 setPenetrationState({ projectedYear: e.target.value });
+                // Reset showTable and speedEstimated when year changes
                 setShowTable(false);
+                setProjectedDemandState({ speedEstimated: false });
               }}
               className="border rounded px-2 py-1 w-24 h-[32px]"
             >
@@ -262,7 +285,7 @@ function ProjectedDemand({ activeStep }) {
                   theme === "dark" ? "border-gray-700" : "border-white"
                 }`}
               >
-                <option value="">City</option>S
+                <option value="">City</option>
                 {statesList.slice(1).map((st) => (
                   <option key={st} value={st}>
                     {st}
@@ -271,16 +294,21 @@ function ProjectedDemand({ activeStep }) {
               </select>
               <button
                 type="button"
-                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded"
-                disabled={!penetrationState.projectedYear}
-                onClick={() => setShowTable(true)}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!penetrationState.projectedYear || !projectedDemandState.projectedTrafficVolumeData?.length}
+                onClick={() => {
+                  setShowTable(true);
+                  // Mark that speed has been estimated
+                  setProjectedDemandState({ speedEstimated: true });
+                }}
               >
                 Estimate Speed
               </button>
             </div>
           </div>
         </form>
-        {projectedImg ? (
+        {/* Show data/results only after Estimate Speed is clicked AND speedEstimated flag is set */}
+        {showTable && projectedDemandState.speedEstimated && projectedImg && (mappedCity && year) ? (
           <>
             <img
               src={projectedImg}
@@ -298,7 +326,7 @@ function ProjectedDemand({ activeStep }) {
             </div>
           </>
         ) : null}
-        {showTable && projectedDemandState.projectedTrafficVolumeData.length ? (
+        {showTable && projectedDemandState.speedEstimated && projectedDemandState.projectedTrafficVolumeData?.length > 0 ? (
           <div>
             <div className="bg-[#f7f7f9] text-[#222222] text-center box-border rounded font-semibold border border-solid border-[#cccccc]">
               <span>Projected Increase In Traffic Volumes</span>
@@ -318,15 +346,11 @@ function ProjectedDemand({ activeStep }) {
               renderPagination={false}
             />
           </div>
-        ) : (
+        ) : showTable && projectedDemandState.speedEstimated ? (
           <div className="min-w-[60%] flex items-center justify-center h-[500px] text-gray-500">
-            {!penetrationState.projectedYear
-              ? "Select a year and click Estimate Speed to view data"
-              : !showTable
-                ? "Click Estimate Speed to view data"
-                : "No data"}
+            No data available
           </div>
-        )}
+        ) : null}
         <TractParametersTable trafficState={trafficState} />
       </div>
       <div className="flex flex-col gap-6">

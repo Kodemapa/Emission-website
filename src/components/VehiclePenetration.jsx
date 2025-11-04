@@ -103,7 +103,7 @@ function VehiclePenetration({ activeStep }) {
 
     // Prepare FormData for backend (file upload)
     const formData = new FormData();
-    formData.append("city", values.city);
+    formData.append("city_name", values.city);
     formData.append("base_year", values.base_year);
     formData.append("vehicle_type", values.vehicle_type);
     formData.append("projected_year", values.projected_year);
