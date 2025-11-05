@@ -192,7 +192,7 @@ function VehicleTrafficVolume() {
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 rounded">
           <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 w-48 whitespace-nowrap justify-center">
-            <span className="mr-2">Upload Traffic Volume</span>
+            <span className="mr-2">Traffic Volume</span>
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
               type="file"
@@ -202,7 +202,7 @@ function VehicleTrafficVolume() {
             />
           </label>
           <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 w-48 whitespace-nowrap justify-center ml-4">
-            <span className="mr-2 ml-2">Upload MFD Parameters</span>
+            <span className="mr-2 ml-2">MFD Parameters</span>
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
               type="file"

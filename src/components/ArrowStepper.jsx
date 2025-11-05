@@ -305,7 +305,8 @@ export default function ArrowStepper() {
           )}
         </div>
         {/* Navigation Buttons: Back/Reset, aligned with stepper */}
-        {/* <div className="flex flex-col justify-start gap-4 min-w-[120px]">
+        {activeStep === 2 && (
+        <div className="flex flex-col justify-start gap-4 min-w-[120px]">
           {activeStep > 0 && activeStep < steps.length && (
             <button
               onClick={handleBack}
@@ -314,15 +315,16 @@ export default function ArrowStepper() {
               Back
             </button>
           )}
-          {activeStep === steps.length - 1 && (
+          {/* {activeStep === steps.length - 1 && (
             <button
               onClick={() => setActiveStep(-1)}
               className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
             >
               Reset
             </button>
-          )}
-        </div> */}
+          )} */}
+        </div>
+         )}
       </div>
     </div>
   );

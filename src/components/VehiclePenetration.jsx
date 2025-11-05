@@ -236,7 +236,7 @@ function VehiclePenetration({ activeStep }) {
             }`}
           >
             <span className="flex items-center gap-2 w-full justify-center">
-                              Upload Projected Penetration
+                              Projected Penetration
                               <CloudUpload className="w-4 h-4" />
                             </span>
                             <input

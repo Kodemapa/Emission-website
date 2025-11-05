@@ -290,7 +290,7 @@ function VehicleClassification({ activeStep }) {
                 style={{ minWidth: 0 }}
               >
                 <span className="flex items-center gap-2 w-full justify-center">
-                  Upload Vehicle Classification
+                  Vehicle Classification
                   <CloudUpload className="w-4 h-4" />
                 </span>
                 <input

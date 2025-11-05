@@ -228,7 +228,7 @@ function ProjectedDemand() {
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 rounded">
           <label className="flex items-center bg-blue-400 text-white font-semibold px-4 h-[32px] rounded cursor-pointer whitespace-nowrap gap-2">
-            <span>Upload Projected Demand</span>
+            <span>Projected Demand</span>
             <CloudUpload className="w-5 h-5" />
             <input
               type="file"

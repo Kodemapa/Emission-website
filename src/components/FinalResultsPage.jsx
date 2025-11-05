@@ -97,6 +97,11 @@ const FinalResultsPage = () => {
     <div className="flex flex-row  gap-6"> 
       {vehicleGridSelection === "VEHICLE" && <div className="flex flex-col items-end gap-8">
         <div className="flex flex-col items-end gap-4">
+        <div className="flex flex-col gap-[2px]">
+        
+        <label className="text-xs font-medium text-gray-600">
+                  Fuel Type
+                </label>
           <select
             value={fuelType}
             onChange={(e) => {
@@ -111,12 +116,17 @@ const FinalResultsPage = () => {
               </option>
             ))}
           </select>
+          </div>
           <img
             src={fuelSrc}
             className="max-w-[700px] w-full h-auto object-contain rounded mx-auto"
           />
         </div>
         <div className="flex flex-col items-end gap-4">
+          <div className="flex flex-col gap-[2px]">
+        <label className="text-xs font-medium text-gray-600">
+                  Emission Type
+                </label>
           <select
             value={emissionType}
             onChange={(e) => {
@@ -130,7 +140,7 @@ const FinalResultsPage = () => {
                 {et.label}
               </option>
             ))}
-          </select>
+          </select></div>
           <img
             src={emissionSrc}
             className="max-w-[700px] w-full h-auto object-contain rounded mx-auto"
@@ -152,6 +162,10 @@ const FinalResultsPage = () => {
           />
       </div> }
       {vehicleGridSelection === "VEHICLE" && <div className="flex flex-col gap-4 items-center">
+        <div className="flex flex-col gap-[2px]">
+        <label className="text-xs font-medium text-gray-600">
+                  City
+                </label>
         <select
             disabled
             className={`border rounded px-2 py-1 w-25 ${
@@ -159,7 +173,7 @@ const FinalResultsPage = () => {
             }`}
           >
             <option>{classificationState.city || "City"}</option>
-          </select>
+          </select></div>
         <img
           src={cityImages[classificationState.city]}
           alt={classificationState.city}
@@ -168,6 +182,9 @@ const FinalResultsPage = () => {
       </div> }
       <div className="flex flex-col gap-[300px]">
         <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-[2px]"> <label className="text-xs font-medium text-gray-600">
+                  Vehicle / Grid
+                </label>
           <select
             value={vehicleGridSelection}
             onChange={(e) => {
@@ -178,8 +195,13 @@ const FinalResultsPage = () => {
             <option value="">Select Vehicle/Grid</option>
             <option value="VEHICLE">Vehicle</option>
             <option value="GRID">Grid</option>
-          </select>
-          {vehicleGridSelection !== "GRID" && <select
+          </select></div>
+       
+          {vehicleGridSelection !== "GRID" && <div className="flex flex-col gap-[2px]"> 
+            <label className="text-xs font-medium text-gray-600">
+                  Daily / Annual
+                </label>
+            <select
             value={dailyAnnualSelection}
             onChange={(e) => {
               setDailyAnnualSelection(e.target.value);
@@ -189,7 +211,7 @@ const FinalResultsPage = () => {
             <option value="">Select Daily/Annual</option>
             <option value="DAILY">Daily</option>
             <option value="ANNUAL">Annual</option>
-          </select>}
+          </select></div>}
         </div>
         <div>
           <Button variant="contained" onClick={onDownload}>

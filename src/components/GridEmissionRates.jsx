@@ -31,44 +31,44 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
 
   const scenarios = [
     {
-      title: "Mid-case",
+      title: "Mid-case Scenario",
       description:
-        "This scenario represents central estimates for key inputs such as technology costs, fuel prices, and demand growth, with no inclusion of nascent technologies. It assumes electric sector policies as they existed in September 2023.",
+        "This scenario represents central estimates for fundamental inputs, including moderate renewable energy and battery technology costs (NREL, 2024), EIA AEO2023 Reference natural gas prices (U.S. EIA, 2023), and an average electricity demand growth of 1.8% per year from 2024 to 2050, reaching 6,509 TWh/year by 2050.",
     },
     {
       title: "Low Renewable Energy and Battery Costs",
       description:
-        "Mirrors the Mid-case assumptions but assumes lower costs and greater performance improvements for renewable energy and batteries.",
+        "This scenario mirrors the foundational assumptions of the Mid-case but posits a future where renewable energy and battery costs are considerably lower, using the advanced projections from the 2024 Annual Technology Baseline (ATB) (NREL, 2024), with performance improvements and cost declines, such as wind capital adders decreasing to $0/kW by 2050",
     },
     {
       title: "High Renewable Energy and Battery Costs",
       description:
-        "Similar to the Mid-case but with higher costs and less significant performance improvements for renewable energy and batteries.",
+        "Similar to the Mid-case but this scenario assumes more conservative ATB projections with higher renewable energy and battery costs and a $200/kW capital cost adder for wind through 2050, slowing clean technology adoption.",
     },
     {
-      title: "High Electricity Demand Growth",
+      title: "High Demand Growth",
       description:
-        "Uses the Mid-case base assumptions but assumes a higher average annual demand growth rate of 2.8% from 2024 to 2050, consistent with a trajectory towards 100% economy-wide decarbonization.",
+        "This scenario also uses the Mid-case base assumptions but anticipates 2.8% annual demand growth from 2024 to 2050, reaching 8,354 TWh/year by 2050, contrasting with 1.8% in the base assumptions.",
     },
     {
       title: "Low Natural Gas Prices",
       description:
-        "Consistent with the Mid-case but assumes lower natural gas prices.",
+        "This scenario retains the core assumptions of the Mid-case but applies the AEO2023 High Oil & Gas Resource/Technology case (U.S. EIA, 2023), in which prices begin at the 2025 Reference level and decline more sharply thereafter. By 2035, national average natural gas prices are projected to fall to approximately $2.50/MMBtu, compared to $3.50–$4.00/MMBtu in the Mid-case scenario.",
     },
     {
       title: "High Natural Gas Prices",
       description:
-        "Follows the Mid-case base assumptions but assumes higher natural gas prices.",
+        "This scenario builds on the same foundational assumptions as the Mid-case but incorporates the AEO2023 Low Oil & Gas Resource/Technology case (U.S. EIA, 2023), which projects substantially higher natural gas prices over time. Prices start at the same level in 2025 but increase more rapidly, reaching over $6.00/MMBtu by 2035, compared to $3.50–$4.00/MMBtu in the Mid-case scenario, thereby enhancing the competitiveness of renewable energy and storage in the generation mix.",
     },
     {
-      title: "95% Decarbonization by 2050",
+      title: "Low Renewable Energy and Battery Costs with High Natural Gas Prices",
       description:
-        "Building on the Mid-case, includes nascent technologies and enforces a national decarbonization constraint, reducing net electricity-sector emissions to 5% of 2005 levels by 2050.",
+        " Building on the base assumptions of the Mid-case scenario, this case combines lower renewable energy and battery costs, based on the 2024 ATB advanced projections (NREL, 2024), which include wind adders dropping to $0/kW by 2050, with high natural gas prices, rising above $6.00/MMBtu by 2035. This combination creates one of the most favorable environments for renewable energy deployment among the eight modeled scenarios.",
     },
     {
-      title: "100% Decarbonization by 2035",
+      title: "High Renewable Energy and Battery Costs with Low Natural Gas Prices",
       description:
-        "Like the 95% case but more aggressive—achieves net-zero emissions by 2035 via inclusion of nascent technologies and a linear emissions reduction to zero.",
+        "This scenario also builds on the same base assumptions as the first scenario but combines higher renewable energy and battery costs based on conservative ATB projections NREL, 2024), including a $200/kW capital cost adder for wind through 2050, with low natural gas prices, projected to reach around $2.50/MMBtu by 2035. This combination reduces the competitiveness of renewables and results in a slower decarbonization trajectory.",
     },
   ];
 
@@ -201,15 +201,21 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
           />
         </div>
         {classificationState.city && cityImages[classificationState.city] && (
-          <div className="flex flex-row gap-6 items-start">
-            <img
-              src={cityImages[classificationState.city]}
+           <div className="flex flex-row gap-6 items-start">
+             <img
+               src={cityImages[classificationState.city]}
               alt={classificationState.city}
-              className="h-[500px] object-contain rounded"
-              style={{ maxWidth: '50%' }}
-            />
+               className="h-[100px] object-contain rounded"
+               style={{ maxWidth: '150px' }}  />
            
-          </div>
+ </div>
+//           <div className="flex flex-row gap-6 items-start">
+//   <img
+//     src={cityImages[classificationState.city]}
+//     alt={classificationState.city}
+//     className="h-[50px] md:h-[50px] lg:h-[50px] w-auto object-contain rounded"
+//   />
+// </div>
         )}
       </div>
     </div>

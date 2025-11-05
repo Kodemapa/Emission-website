@@ -37,7 +37,7 @@ const Header = () => {
         <h1
           className="text-xl font-bold transition-colors duration-300 text-blue-700"
         >
-          National Energy and Emission Modeling and Analysis Tool
+          Atlanta Energy and Emission Modeling and Analysis Tool
         </h1>
         <Notifications />
       </div>
