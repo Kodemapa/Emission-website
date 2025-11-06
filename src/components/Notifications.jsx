@@ -32,6 +32,14 @@ const Notifications = () => {
     };
   }, []);
 
+  // Mark notifications as read when dropdown is opened
+  useEffect(() => {
+    if (open) {
+      const markAllNotificationsAsRead = useAppStore.getState().markAllNotificationsAsRead;
+      markAllNotificationsAsRead();
+    }
+  }, [open]);
+
   const btnTheme = isDark
     ? "bg-[#163e73] text-white border-white/20 hover:bg-[#1b4d8f] focus:ring-white/30"
     : "bg-white text-[#163e73] border-gray-200 hover:bg-[#f3f7ff] focus:ring-blue-500/30";
@@ -44,6 +52,10 @@ const Notifications = () => {
   const timeTheme = isDark ? "text-zinc-400" : "text-gray-500";
 
   const notifications = useAppStore((s) => s.notifications);
+  
+  const unreadCount = notifications?.filter((n) => !n.read).length || 0;
+  const hasUnread = unreadCount > 0;
+
   return (
     <div className="relative w-full" ref={wrapperRef}>
       <button
@@ -54,8 +66,16 @@ const Notifications = () => {
         aria-expanded={open}
         aria-controls="notifications-menu"
       >
-        <span>Notifications</span>
-        <i className="bi bi-chevron-down ml-2" aria-hidden="true"></i>
+        <span className="flex items-center gap-2">
+          Notifications
+          {hasUnread && (
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+          )}
+        </span>
+        <i className="bi bi-chevron-down" aria-hidden="true"></i>
       </button>
 
       {open && (
@@ -68,9 +88,14 @@ const Notifications = () => {
             {notifications.slice().reverse().map((n) => (
               <li key={n.id} role="menuitem">
                 <div
-                  className={`px-3 py-2 flex items-start justify-between gap-3 ${itemHover}`}
+                  className={`px-3 py-2 flex items-start justify-between gap-3 ${itemHover} ${!n.read ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}
                 >
-                  <span className="text-sm">{n.text}</span>
+                  <span className="text-sm flex items-start gap-2">
+                    {!n.read && (
+                      <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-1 flex-shrink-0"></span>
+                    )}
+                    {n.text}
+                  </span>
                   <time className={`text-xs whitespace-nowrap ${timeTheme}`}>
                     {timeAgo(n.at)}
                   </time>

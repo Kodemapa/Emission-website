@@ -147,7 +147,7 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
             <select
               value={classificationState.cityInput}
               disabled
-              className="border rounded px-2 py-1 w-32"
+              className="bg-gray-300 text-gray-600 rounded px-2 py-1 w-32"
             >
               <option value="">City</option>
               {statesList.slice(1).map((st) => (

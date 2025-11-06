@@ -17,8 +17,12 @@ const useAppStore = create((set, get) => ({
     set((state) => ({
       notifications: [
         ...state.notifications.slice(-3), // keep last 3, add new for max 4
-        { id: Date.now(), text, at: Date.now() },
+        { id: Date.now(), text, at: Date.now(), read: false },
       ],
+    })),
+  markAllNotificationsAsRead: () =>
+    set((state) => ({
+      notifications: state.notifications.map((n) => ({ ...n, read: true })),
     })),
   // ------------------------------
   // Classification slice

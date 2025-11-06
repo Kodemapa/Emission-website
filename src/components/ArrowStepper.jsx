@@ -257,8 +257,8 @@ export default function ArrowStepper() {
         )}
       </div>
 
-      {/* Unified row: navigation and step content aligned */}
-      <div className="flex flex-row items-start gap-4 w-full">
+            {/* Unified row: navigation and step content aligned */}
+      <div className="flex flex-col gap-4 w-full">
         {/* Step Content (InputStepper, AnalysisStepper, GridEmissionRates) */}
         <div className="flex-1">
           {activeStep === 0 && (
@@ -304,27 +304,18 @@ export default function ArrowStepper() {
             </div>
           )}
         </div>
-        {/* Navigation Buttons: Back/Reset, aligned with stepper */}
+        
+        {/* Navigation Buttons: Back button at the bottom */}
         {activeStep === 2 && (
-        <div className="flex flex-col justify-start gap-4 min-w-[120px]">
-          {activeStep > 0 && activeStep < steps.length && (
+          <div className="flex justify-center gap-4 w-full pb-4">
             <button
               onClick={handleBack}
               className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
             >
               Back
             </button>
-          )}
-          {/* {activeStep === steps.length - 1 && (
-            <button
-              onClick={() => setActiveStep(-1)}
-              className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-            >
-              Reset
-            </button>
-          )} */}
-        </div>
-         )}
+          </div>
+        )}
       </div>
     </div>
   );

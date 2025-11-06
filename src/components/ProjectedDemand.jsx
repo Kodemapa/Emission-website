@@ -344,6 +344,11 @@ function ProjectedDemand() {
               }
               pagination={false}
               renderPagination={false}
+              afterGetColHeader={(col, TH) => {
+                TH.style.textAlign = 'left';
+                TH.style.paddingLeft = '5px';
+                TH.style.fontWeight = 'bold';
+              }}
             />
           </div>
         ) : showTable && projectedDemandState.speedEstimated ? (

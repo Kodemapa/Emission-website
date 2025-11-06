@@ -89,11 +89,16 @@ for (const [path, url] of Object.entries(modules)) {
 
 // --- Public helpers ----------------------------------------------------------
 export function getR1EmissionImgUrl(emissionType, cityName) {
-  return EMISSION_MAP[emissionKey(emissionType, cityName)];
+  const key = emissionKey(emissionType, cityName);
+  console.log("getR1EmissionImgUrl - key:", key, "result:", EMISSION_MAP[key]);
+  return EMISSION_MAP[key];
 }
 
 export function getR1FuelImgUrl(fuelType, cityName) {
-  return FUEL_MAP[fuelKey(fuelType, cityName)];
+  const key = fuelKey(fuelType, cityName);
+  console.log("getR1FuelImgUrl - fuelType:", fuelType, "cityName:", cityName, "key:", key, "result:", FUEL_MAP[key]);
+  console.log("Available FUEL_MAP keys:", Object.keys(FUEL_MAP));
+  return FUEL_MAP[key];
 }
 
 export function buildR1FileNameFromEmission(emissionType, cityName, url) {

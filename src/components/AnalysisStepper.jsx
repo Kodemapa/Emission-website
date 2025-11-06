@@ -59,7 +59,7 @@ function AnalysisStepper({ finalNext, activeStep, setActiveStep }) {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex flex-row gap-4 mt-4 w-full justify-center">
+      <div className={activeStep === 0 ? "w-full max-w-3xl mx-auto flex flex-row justify-between gap-4 mt-2" : "flex flex-row gap-4 mt-4 w-full justify-center"}>
 
           <button
             onClick={handleBack}

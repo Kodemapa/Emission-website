@@ -99,6 +99,9 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
         "& .MuiDataGrid-columnHeaders": {
           backgroundColor: theme === "dark" ? "#0a2f5c" : "#f5f7fb",
         },
+        "& .MuiDataGrid-columnHeaderTitle": {
+          fontWeight: 'bold',
+        },
         "& .MuiDataGrid-cell": {
           color: theme === "dark" ? "#e5e7eb" : undefined,
         },

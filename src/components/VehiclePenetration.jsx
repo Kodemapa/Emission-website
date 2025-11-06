@@ -379,6 +379,11 @@ function VehiclePenetration({ activeStep }) {
               themeName={
                 theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
               }
+              afterGetColHeader={(col, TH) => {
+                TH.style.textAlign = 'left';
+                TH.style.paddingLeft = '5px';
+                TH.style.fontWeight = 'bold';
+              }}
             />
             <div className="flex justify-between gap-4 mt-4">
               <button
