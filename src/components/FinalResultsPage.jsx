@@ -52,7 +52,8 @@ function getRandomColor(idx) {
   return colors[idx % colors.length];
 }
 
-const FinalResultsPage = () => {
+const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
+  const [dailyAnnualSelection, setDailyAnnualSelection] = useState('DAILY'); // Default to DAILY
   const ConsumptionAndEmissionState = useAppStore(
     (s) => s.ConsumptionAndEmission
   );
@@ -62,8 +63,7 @@ const FinalResultsPage = () => {
   const theme = useAppStore((s) => s.theme);
   const GridEmissionState = useAppStore((state) => state.GridEmission);
   const classificationState = useAppStore((state) => state.classificationState);
-  const [vehicleGridSelection, setVehicleGridSelection] = useState('')
-  const [dailyAnnualSelection, setDailyAnnualSelection] = useState('DAILY') // Default to DAILY
+  // Use resultsSelection prop from ArrowStepper for Vehicle/Grid selection
   const FUEL_TYPES = [
     "CNG",
     "Diesel",
@@ -80,14 +80,14 @@ const FinalResultsPage = () => {
   const cityName = classificationState.city || classificationState.cityInput;
   const fuelType = ConsumptionAndEmissionState.FuelType || "";
   const emissionType = ConsumptionAndEmissionState.EmissionType || "";
-  const fuelSrc = vehicleGridSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ? getR1FuelImgUrl(fuelType, cityName) : getR2FuelImgUrl(fuelType, cityName);
-  const emissionSrc = vehicleGridSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ?  getR1EmissionImgUrl(emissionType, cityName) : getR2EmissionImgUrl(emissionType, cityName);
+  const fuelSrc = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ? getR1FuelImgUrl(fuelType, cityName) : getR2FuelImgUrl(fuelType, cityName);
+  const emissionSrc = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ?  getR1EmissionImgUrl(emissionType, cityName) : getR2EmissionImgUrl(emissionType, cityName);
   const onDownload = () => {
     const emission = GridEmissionState.EmissionType;
     const city = classificationState.cityInput;
 
-    const fuelUrl = vehicleGridSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ? getR1FuelImgUrl(fuelType, cityName) : getR2FuelImgUrl(fuelType, cityName);
-    const emissionUrl = vehicleGridSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ?  getR1EmissionImgUrl(emissionType, cityName) : getR2EmissionImgUrl(emissionType, cityName);
+    const fuelUrl = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ? getR1FuelImgUrl(fuelType, cityName) : getR2FuelImgUrl(fuelType, cityName);
+    const emissionUrl = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ?  getR1EmissionImgUrl(emissionType, cityName) : getR2EmissionImgUrl(emissionType, cityName);
     if (!fuelUrl) {
       toast.error("Image not found for selected fuel/city");
       return;
@@ -98,14 +98,14 @@ const FinalResultsPage = () => {
       return;
     }
 
-    const filenameEmission = vehicleGridSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ? buildR1FileNameFromEmission(
+    const filenameEmission = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ? buildR1FileNameFromEmission(
       emission,
       city,
       emissionUrl
     ) : buildR2FileNameFromEmission(emission,
       city,
       emissionUrl);
-    const filenameFuel = vehicleGridSelection === "VEHICLE" && dailyAnnualSelection === "DAILY"  ? buildR1FileNameFromFuel(fuelType, city, fuelUrl)
+    const filenameFuel = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY"  ? buildR1FileNameFromFuel(fuelType, city, fuelUrl)
     : buildR2FileNameFromFuel(fuelType, city, fuelUrl);
 
     // trigger download
@@ -134,9 +134,9 @@ const FinalResultsPage = () => {
             Vehicle / Grid
           </label>
           <select
-            value={vehicleGridSelection}
+            value={resultsSelection}
             onChange={(e) => {
-              setVehicleGridSelection(e.target.value);
+              setResultsSelection(e.target.value);
             }}
             className="border rounded px-2 py-1 w-48"
           >
@@ -146,7 +146,7 @@ const FinalResultsPage = () => {
           </select>
         </div>
        
-        {vehicleGridSelection !== "GRID" && (
+  {resultsSelection !== "GRID" && (
           <div className="flex flex-col gap-[2px]"> 
             <label className="text-xs font-medium text-gray-600">
               Daily / Annual
@@ -165,7 +165,7 @@ const FinalResultsPage = () => {
           </div>
         )}
 
-        {vehicleGridSelection === "VEHICLE" && (
+  {resultsSelection === "VEHICLE" && (
           <>
             <div className="flex flex-col gap-[2px]">
               <label className="text-xs font-medium text-gray-600">
@@ -230,7 +230,7 @@ const FinalResultsPage = () => {
 
       {/* Content Area - Charts and Map */}
       <div className="flex flex-row gap-6">
-        {vehicleGridSelection === "VEHICLE" && (
+  {resultsSelection === "VEHICLE" && (
           <>
             <div className="flex flex-col gap-8 flex-1">
               {fuelType && fuelSrc && (
@@ -299,7 +299,7 @@ const FinalResultsPage = () => {
           </>
         )}
         
-        {vehicleGridSelection === "GRID" && (
+  {resultsSelection === "GRID" && (
            <div className="flex flex-row gap-6">
             <div className="flex flex-col gap-6 flex-1">
               <img

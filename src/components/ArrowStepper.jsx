@@ -7,6 +7,8 @@ import useAppStore from '../useAppStore';
 import { toast } from "react-toastify";
 import FinalResultsPage from "./FinalResultsPage";
 export default function ArrowStepper() {
+  // Track Vehicle/Grid selection for Results step, default to empty
+  const [resultsSelection, setResultsSelection] = useState("");
   const inputSteps = [
     "Vehicle Classification Data",
     "Projected Vehicle Penetration Rate Data",
@@ -52,6 +54,10 @@ export default function ArrowStepper() {
     }
     if (activeStep === 1 && !analysisDataComplete) {
       toast.error('Please complete all Analysis selections before proceeding to Results.');
+      return;
+    }
+    if (activeStep === 2 && (!resultsSelection || (resultsSelection !== 'VEHICLE' && resultsSelection !== 'GRID'))) {
+      toast.error('Please select either Vehicle or Grid before proceeding.');
       return;
     }
     setActiveStep((s) => (s < steps.length - 1 ? s + 1 : s));
@@ -248,7 +254,8 @@ export default function ArrowStepper() {
                 stepperActiveStep = analysisSubStep;
                 stepperSteps = analysisSteps;
               } else if (activeStep === 2) {
-                stepperActiveStep = 1;
+                // Use Vehicle/Grid selection from FinalResultsPage
+                stepperActiveStep = resultsSelection === "GRID" ? 1 : 0;
                 stepperSteps = analysisSteps;
               }
               return <VehicleStepper activeStep={stepperActiveStep} steps={stepperSteps} />;
@@ -300,7 +307,10 @@ export default function ArrowStepper() {
           )}
           {activeStep === 2 && (
             <div className="flex flex-row items-center gap-4 p-4 bg-white">
-              <FinalResultsPage />
+              <FinalResultsPage
+                resultsSelection={resultsSelection}
+                setResultsSelection={setResultsSelection}
+              />
             </div>
           )}
         </div>

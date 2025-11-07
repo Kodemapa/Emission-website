@@ -23,13 +23,13 @@ function VehicleTrafficVolume() {
   const classificationState = useAppStore((s) => s.classificationState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
   const setTrafficState = useAppStore((s) => s.setTrafficVolumeState);
-  
+
   // Show data/results only after Estimate Speed is clicked
   const [showResults, setShowResults] = React.useState(false);
+  const [trafficPlotImg, setTrafficPlotImg] = React.useState(null);
 
   // Auto-show results if speed was estimated before (e.g., when navigating back from next page)
   React.useEffect(() => {
-    // Only show results if the speedEstimated flag is set (meaning user clicked Estimate Speed before)
     if (trafficState.speedEstimated) {
       setShowResults(true);
     }
@@ -100,6 +100,7 @@ function VehicleTrafficVolume() {
   const cityImages = { 
     Atlanta, 
     "Los Angeles": LosAngeles, 
+    LosAngeles, // Add this line to support 'LosAngeles' as a key
     Seattle, 
     NewYork 
   };
@@ -115,14 +116,14 @@ function VehicleTrafficVolume() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const data = e.target.result;
       const wb = file.name.endsWith(".csv")
         ? XLSX.read(data, { type: "string" })
         : XLSX.read(data, { type: "binary" });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const parsed = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      
+
       if (type === "trafficVolume") {
         if (parsed.length) {
           setTrafficState({
@@ -136,6 +137,21 @@ function VehicleTrafficVolume() {
             trafficVolumeData: [],
             trafficVolumeFile: file,
           });
+        }
+        // POST to /process/traffic after upload
+        try {
+          const city = (classificationState.city ?? classificationState.cityInput) || "";
+          const year = classificationState.baseYear || "";
+          const formData = new FormData();
+          formData.append("city_name", city);
+          formData.append("year", year);
+          formData.append("parameters_file", file);
+          await fetch("http://127.0.0.1:5003/process/traffic", {
+            method: "POST",
+            body: formData,
+          });
+        } catch (err) {
+          toast.error("Traffic volume processing failed");
         }
       } else if (type === "mftParameters") {
         if (parsed.length) {
@@ -152,7 +168,7 @@ function VehicleTrafficVolume() {
           });
         }
       }
-      
+
       // Print variable in console after upload
       const city =
         (classificationState.city ?? classificationState.cityInput) || "";
@@ -170,15 +186,16 @@ function VehicleTrafficVolume() {
         values
       );
     };
-    
+
     file.name.endsWith(".csv")
       ? reader.readAsText(file)
       : reader.readAsBinaryString(file);
   };
 
-  const city =
-    (classificationState.city ?? classificationState.cityInput) || "";
-  const key = city.trim();
+  const city = (classificationState.city ?? classificationState.cityInput) || "";
+  // Normalize city key for image lookup
+  let key = city.trim();
+  if (key.toLowerCase() === "los angeles") key = "Los Angeles";
   const srcImg = trafficVolumeImages[key];
 
   const hasTrafficVolumeData =
@@ -242,12 +259,26 @@ function VehicleTrafficVolume() {
           <button
             type="button"
             className="px-6 py-2 bg-blue-500 text-white rounded font-semibold h-10 min-w-[140px] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={() => {
+            onClick={async () => {
               setShowResults(true);
-              // Mark that speed has been estimated
               setTrafficState({ speedEstimated: true });
+              // Fetch traffic plot image from backend
+              try {
+                const city = (classificationState.city ?? classificationState.cityInput) || "";
+                const year = classificationState.baseYear || "";
+                if (!city || !year) return;
+                const url = `http://127.0.0.1:5003/plot/traffic/${encodeURIComponent(city)}/${encodeURIComponent(year)}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("Failed to fetch traffic plot image");
+                const blob = await res.blob();
+                const imgUrl = URL.createObjectURL(blob);
+                setTrafficPlotImg(imgUrl);
+              } catch (err) {
+                setTrafficPlotImg(null);
+                toast.error("Failed to load traffic plot image");
+              }
             }}
-            disabled={!hasTrafficVolumeData && !hasMFTParametersData}
+            disabled={!(hasTrafficVolumeData && hasMFTParametersData)}
           >
             Estimate Speed
           </button>
@@ -256,7 +287,13 @@ function VehicleTrafficVolume() {
         {/* Show data/results only after Estimate Speed is clicked AND speedEstimated flag is set */}
         {showResults && trafficState.speedEstimated && (
           <>
-            {srcImg ? (
+            {trafficPlotImg ? (
+              <img
+                src={trafficPlotImg}
+                alt="Traffic Plot"
+                className="w-full max-h-[350px] object-contain rounded"
+              />
+            ) : srcImg ? (
               <img
                 src={srcImg}
                 alt={city}
