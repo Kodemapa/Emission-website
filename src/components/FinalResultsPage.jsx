@@ -12,8 +12,7 @@ import {
   buildR2FileNameFromFuel,
 } from "../utils/resultsTwoAssets";
 import { getR3EmissionImgUrl } from "../utils/resultsThirdAssets.js";
-import gridData from "../assets/image.png";
-import { toast } from "react-toastify";
+import gridData from "../assets/griddata1.png";
 import Button from "@mui/material/Button";
 import { useState } from "react";
 
@@ -82,19 +81,23 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
   const emissionType = ConsumptionAndEmissionState.EmissionType || "";
   const fuelSrc = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ? getR1FuelImgUrl(fuelType, cityName) : getR2FuelImgUrl(fuelType, cityName);
   const emissionSrc = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ?  getR1EmissionImgUrl(emissionType, cityName) : getR2EmissionImgUrl(emissionType, cityName);
-  const onDownload = () => {
+  const onDownload = async () => {
     const emission = GridEmissionState.EmissionType;
     const city = classificationState.cityInput;
 
     const fuelUrl = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ? getR1FuelImgUrl(fuelType, cityName) : getR2FuelImgUrl(fuelType, cityName);
     const emissionUrl = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY" ?  getR1EmissionImgUrl(emissionType, cityName) : getR2EmissionImgUrl(emissionType, cityName);
     if (!fuelUrl) {
-      toast.error("Image not found for selected fuel/city");
+      window.dispatchEvent(
+        new CustomEvent("app-notification", { detail: { text: "Image not found for selected fuel/city" } })
+      );
       return;
     }
 
     if (!emissionUrl) {
-      toast.error("Image not found for selected emission/city");
+      window.dispatchEvent(
+        new CustomEvent("app-notification", { detail: { text: "Image not found for selected emission/city" } })
+      );
       return;
     }
 
@@ -108,22 +111,59 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
     const filenameFuel = resultsSelection === "VEHICLE" && dailyAnnualSelection === "DAILY"  ? buildR1FileNameFromFuel(fuelType, city, fuelUrl)
     : buildR2FileNameFromFuel(fuelType, city, fuelUrl);
 
-    // trigger download
-    const aFuel = document.createElement("a");
-    aFuel.href = fuelUrl;
-    aFuel.download = filenameFuel;
-    document.body.appendChild(aFuel);
-    aFuel.click();
-    aFuel.remove();
+    // Helper to download SVG as PNG
+    async function downloadAsPng(url, filename) {
+      return new Promise((resolve, reject) => {
+        fetch(url)
+          .then(res => res.text())
+          .then(svgText => {
+            const svg = new Blob([svgText], { type: 'image/svg+xml' });
+            const urlObj = URL.createObjectURL(svg);
+            const img = new window.Image();
+            img.onload = function () {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+              canvas.toBlob(blob => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename.replace(/\.svg$/i, '.png');
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(urlObj);
+                resolve();
+              }, 'image/png');
+            };
+            img.onerror = reject;
+            img.src = urlObj;
+          })
+          .catch(reject);
+      });
+    }
 
-    const aEmission = document.createElement("a");
-    aEmission.href = emissionUrl;
-    aEmission.download = filenameEmission;
-    document.body.appendChild(aEmission);
-    aEmission.click();
-    aEmission.remove();
+    // Download logic: if SVG, convert to PNG, else download as is
+    const downloadImage = async (url, filename) => {
+      if (url.endsWith('.svg')) {
+        await downloadAsPng(url, filename);
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    };
 
-    toast.success("Download started");
+    await downloadImage(fuelUrl, filenameFuel);
+    await downloadImage(emissionUrl, filenameEmission);
+
+    window.dispatchEvent(
+      new CustomEvent("app-notification", { detail: { text: "Download started" } })
+    );
   };
   return (
     <div className="flex flex-col gap-6">
@@ -234,18 +274,28 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
           <>
             <div className="flex flex-col gap-8 flex-1">
               {fuelType && fuelSrc && (
-                <img
-                  src={fuelSrc}
-                  className="max-w-[700px] w-full h-auto object-contain rounded"
-                  alt="Fuel consumption chart"
-                />
+                <>
+                  <div style={{ fontWeight: 400, fontSize: 16, marginBottom: 8, marginTop: 0, textAlign: 'center' }}>
+                    {fuelType} Consumption
+                  </div>
+                  <img
+                    src={fuelSrc}
+                    className="max-w-[700px] w-full h-auto object-contain rounded"
+                    alt="Fuel consumption chart"
+                  />
+                </>
               )}
               {emissionType && emissionSrc && (
-                <img
-                  src={emissionSrc}
-                  className="max-w-[700px] w-full h-auto object-contain rounded"
-                  alt="Emission chart"
-                />
+                <>
+                  <div style={{ fontWeight: 400, fontSize: 16, marginBottom: 8, marginTop: 0, textAlign: 'center' }}>
+                    {emissionType} Emission
+                  </div>
+                  <img
+                    src={emissionSrc}
+                    className="max-w-[700px] w-full h-auto object-contain rounded"
+                    alt="Emission chart"
+                  />
+                </>
               )}
             </div>
             <div className="flex flex-col gap-4 flex-shrink-0 ml-auto">
@@ -322,8 +372,8 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
               <img
                 src={gridData}
                 alt="Grid Scenarios Legend"
-                className="h-[200px] object-contain rounded border border-gray-100"
-                style={{ maxWidth: '300px' }}
+                className="h-[320px] object-contain rounded border border-gray-100"
+                style={{ maxWidth: '420px' }}
               />
             </div>
           </div>

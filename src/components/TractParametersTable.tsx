@@ -1,9 +1,7 @@
-
 import { useMemo, useState } from "react";
 import { Box, Button } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import useAppStore from "../useAppStore";
-import { toast } from "react-toastify";
 
 type AnyRow = Record<string, any>;
 
@@ -14,17 +12,31 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
   const rawData = trafficState.trafficMFTParametersData ?? [];
 
   // Build columns from headers
-  const columns: GridColDef[] = useMemo(
-    () =>
-      headers.map((h) => ({
-        field: String(h),
-        headerName: String(h),
-        flex: 1,
-        minWidth: 120,
-        sortable: false,
-      })),
-    [headers]
-  );
+  // Add serial number column before Tract ID
+  const columns: GridColDef[] = useMemo(() => {
+    const baseColumns = headers.map((h) => ({
+      field: String(h),
+      headerName: String(h),
+      flex: 1,
+      minWidth: 120,
+      sortable: false,
+    }));
+    // Only add S.No if trafficState.trafficMFTParametersHeaders exists (VehicleTrafficVolume page)
+    if (headers.length && headers[0] === 'Tract ID') {
+      return [
+        {
+          field: 'sno',
+          headerName: 'S.No',
+          width: 70,
+          sortable: false,
+          align: 'center',
+          headerAlign: 'center',
+        },
+        ...baseColumns,
+      ];
+    }
+    return baseColumns;
+  }, [headers]);
 
   // Normalize rows (AoA from Handsontable OR AoO)
   const allRows: AnyRow[] = useMemo(() => {
@@ -32,14 +44,16 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
     if (Array.isArray(rawData[0])) {
       return (rawData as any[][]).map((arr, idx) => {
         const r: AnyRow = { id: idx + 1 };
+        if (headers.length && headers[0] === 'Tract ID') r['sno'] = idx + 1;
         headers.forEach((h, i) => (r[String(h)] = arr[i] ?? null));
         return r;
       });
     }
-    return (rawData as AnyRow[]).map((r, idx) => ({
-      id: r.id ?? idx + 1,
-      ...r,
-    }));
+    return (rawData as AnyRow[]).map((r, idx) => {
+      const rowObj = { id: r.id ?? idx + 1, ...r };
+      if (headers.length && headers[0] === 'Tract ID') rowObj['sno'] = idx + 1;
+      return rowObj;
+    });
   }, [rawData, headers]);
 
   const [page, setPage] = useState(1);
@@ -51,13 +65,13 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
   const handleNext = async () => {
     // Send all relevant data to backend
     const payload = {
-      city: trafficState.city,
-      base_year: trafficState.baseYear,
+      city: trafficState.city || '',
+      base_year: trafficState.baseYear || '',
       mfd_table_data: trafficState.trafficMFTParametersData,
       mfd_table_headers: trafficState.trafficMFTParametersHeaders,
     };
     try {
-  const res = await fetch('http://localhost:5003/upload/mfd_params', {
+      const res = await fetch('http://localhost:5003/upload/mfd_params', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -65,10 +79,14 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
       if (!res.ok) throw new Error('Upload failed');
       const data = await res.json();
       console.log('Backend response:', data);
-      toast.success("Data uploaded successfully!");
+      window.dispatchEvent(
+        new CustomEvent("app-notification", { detail: { text: "Data uploaded successfully!" } })
+      );
       // Optionally show a message or move to next page
     } catch (err) {
-      toast.error('Upload failed: ' + (err as Error).message);
+      window.dispatchEvent(
+        new CustomEvent("app-notification", { detail: { text: "Upload failed: " + (err as Error).message } })
+      );
     }
     // Don't change pagination here - this is for step progression
   };
@@ -98,12 +116,24 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
         borderRadius: 1,
         "& .MuiDataGrid-columnHeaders": {
           backgroundColor: theme === "dark" ? "#0a2f5c" : "#f5f7fb",
+          borderBottom: '1px solid #ccc',
         },
-        "& .MuiDataGrid-columnHeaderTitle": {
-          fontWeight: 'bold',
+        "& .MuiDataGrid-columnHeader": {
+          borderRight: '1px solid #ccc',
+        },
+        "& .MuiDataGrid-columnHeader:last-child": {
+          borderRight: 'none',
         },
         "& .MuiDataGrid-cell": {
           color: theme === "dark" ? "#e5e7eb" : undefined,
+          borderRight: '1px solid #eee',
+          borderBottom: '1px solid #eee',
+        },
+        "& .MuiDataGrid-row:last-child .MuiDataGrid-cell": {
+          borderBottom: 'none',
+        },
+        "& .MuiDataGrid-cell:last-child": {
+          borderRight: 'none',
         },
         "& .MuiDataGrid-row:hover": {
           backgroundColor: theme === "dark" ? "#0f2444" : undefined,

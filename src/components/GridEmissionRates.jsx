@@ -3,7 +3,7 @@ import Atlanta from "../assets/Georgia.svg";
 import LosAngeles from "../assets/California.svg";
 import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
-import gridDataImg from "../assets/image.png";
+import gridDataImg from "../assets/griddata1.png";
 import VehicleStepper from "./VerticalStepper";
 import AnalysisImage from "./AnalysisImage";
 import {
@@ -75,7 +75,7 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
   const GridEmissionState = useAppStore((state) => state.GridEmission);
   const setGridEmissionState = useAppStore((state) => state.setGridEmission);
 
-  const onDownload = () => {
+  const onDownload = async () => {
     const emission = GridEmissionState.EmissionType;
     const city = classificationState.cityInput;
 
@@ -87,13 +87,63 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
 
     const filename = buildAnalysisFileName(emission, city, url);
 
-    // trigger download
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    // Helper to download SVG as PNG
+    async function downloadAsPng(url, filename) {
+      try {
+        const res = await fetch(url);
+        const svgText = await res.text();
+        const svg = new Blob([svgText], { type: 'image/svg+xml' });
+        const urlObj = URL.createObjectURL(svg);
+        const img = new window.Image();
+        img.onload = function () {
+          // Try to extract width/height from SVG if possible
+          let width = img.width;
+          let height = img.height;
+          if ((!width || !height) && svgText) {
+            const matchW = svgText.match(/width=["'](\d+)["']/);
+            const matchH = svgText.match(/height=["'](\d+)["']/);
+            width = matchW ? parseInt(matchW[1]) : 1200;
+            height = matchH ? parseInt(matchH[1]) : 900;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width || 1200;
+          canvas.height = height || 900;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(blob => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename.replace(/\.svg$/i, '.png');
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(urlObj);
+          }, 'image/png');
+        };
+        img.onerror = function () {
+          toast.error('Failed to load SVG for PNG conversion.');
+        };
+        img.src = urlObj;
+      } catch (e) {
+        toast.error('Failed to fetch SVG for PNG conversion.');
+      }
+    }
+
+    // Download logic: if SVG, convert to PNG, else download as is
+    const downloadImage = async (url, filename) => {
+      if (url.endsWith('.svg')) {
+        await downloadAsPng(url, filename);
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    };
+
+    await downloadImage(url, filename);
 
     toast.success("Download started");
   };
@@ -184,8 +234,8 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
           <img
             src={gridDataImg}
             alt="Grid Data"
-            className="h-[200px] object-contain rounded border border-gray-100 "
-            style={{ maxWidth: '95%' }}
+            className="h-[320px] object-contain rounded border border-gray-100 "
+            style={{ maxWidth: '99%' }}
           />
         </div>
 

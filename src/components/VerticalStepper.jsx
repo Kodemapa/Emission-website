@@ -44,7 +44,7 @@ const ThemedStepLabel = styled(StepLabel, {
   },
 }));
 
-function VehicleStepper({ activeStep = 0, steps = [] }) {
+function VehicleStepper({ activeStep = 0, steps = [], onStepChange }) {
   const theme = useAppStore((s) => s.theme);
   const isDark = theme === "dark";
 
@@ -72,12 +72,13 @@ function VehicleStepper({ activeStep = 0, steps = [] }) {
                 {idx < stepCount - 1 && (
                   <div style={{
                     position: 'absolute',
-                    top: iconSize / 2,
+                    top: '50%', // start at center of circle
                     right: 12,
                     width: 2,
-                    height: iconSize * 0.8,
+                    height: iconSize + 10, // increase the line length between circles
                     background: isDark ? 'rgba(255,255,255,0.45)' : '#0a2f5c',
                     zIndex: 0,
+                    transform: 'translateY(0%)',
                   }} />
                 )}
                 <ThemedStepLabel
@@ -86,17 +87,38 @@ function VehicleStepper({ activeStep = 0, steps = [] }) {
                 >
                   <span style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'flex-end', position: 'relative', zIndex: 1 }}>
                     <span style={{ textAlign: 'right', minWidth: 220 }}>{label}</span>
-                    <span style={{ position: 'relative', zIndex: 2, background: 'white' }}>
-                      {isActive ? (
-                        // Completely filled dark circle for active (same size)
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                          <circle cx="12" cy="12" r="10" fill="#0a2f5c" />
-                        </svg>
-                      ) : (
-                        // Outlined circle for inactive
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                          <circle cx="12" cy="12" r="10" stroke={iconInactive} strokeWidth="2" fill="none" />
-                        </svg>
+                    <span style={{ position: 'relative', zIndex: 2, background: 'white', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <input
+                        type="radio"
+                        checked={isActive}
+                        onChange={() => onStepChange && onStepChange(idx)}
+                        style={{
+                          width: 18,
+                          height: 18,
+                          border: `1px solid #0a2f5c`, // thinner border
+                          background: 'white',
+                          borderRadius: '50%',
+                          appearance: 'none',
+                          outline: 'none',
+                          boxShadow: 'none',
+                          cursor: 'pointer',
+                          display: 'block',
+                          position: 'relative',
+                        }}
+                        tabIndex={0}
+                      />
+                      {isActive && (
+                        <span style={{
+                          position: 'absolute',
+                          left: '50%',
+                          top: '50%',
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          background: '#0a2f5c',
+                          pointerEvents: 'none',
+                          transform: 'translate(-50%, -50%)',
+                        }} />
                       )}
                     </span>
                   </span>

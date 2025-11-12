@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { FaBell } from "react-icons/fa";
 import useAppStore from "../useAppStore";
 
 function timeAgo(ts) {
@@ -52,9 +53,27 @@ const Notifications = () => {
   const timeTheme = isDark ? "text-zinc-400" : "text-gray-500";
 
   const notifications = useAppStore((s) => s.notifications);
+  const addNotification = (notif) => {
+    if (typeof notif === 'string') {
+      useAppStore.getState().addNotification(notif);
+    } else if (notif && notif.text) {
+      useAppStore.getState().addNotification(notif.text);
+    }
+  };
   
   const unreadCount = notifications?.filter((n) => !n.read).length || 0;
   const hasUnread = unreadCount > 0;
+
+  // Listen for global notification events (replace toast usage in app with this)
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail && e.detail.text) {
+        addNotification(e.detail);
+      }
+    };
+    window.addEventListener("app-notification", handler);
+    return () => window.removeEventListener("app-notification", handler);
+  }, []);
 
   return (
     <div className="relative w-full" ref={wrapperRef}>
@@ -67,12 +86,10 @@ const Notifications = () => {
         aria-controls="notifications-menu"
       >
         <span className="flex items-center gap-2">
+          <FaBell className="text-lg" />
           Notifications
           {hasUnread && (
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-            </span>
+            <span className="ml-1 text-xs font-bold text-red-600 animate-bounce">!</span>
           )}
         </span>
         <i className="bi bi-chevron-down" aria-hidden="true"></i>

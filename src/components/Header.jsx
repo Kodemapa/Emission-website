@@ -28,14 +28,15 @@ const Header = () => {
       <Link to={"/"} reloadDocument>
         <IconButton aria-label="home" style={{ background: 'transparent' }}>
           <HomeIcon
-            style={{ color: '#1976d2', background: 'transparent' }} // MUI blue[700]
+            style={{ color: '#1A237E', background: 'transparent' }}
           />
         </IconButton>
       </Link>
 
       <div className="flex flex-col items-center gap-4">
         <h1
-          className="text-xl font-bold transition-colors duration-300 text-blue-700"
+          className="text-xl font-bold transition-colors duration-300"
+          style={{ color: '#1A237E' }}
         >
           Atlanta Energy and Emission Modeling and Analysis Tool
         </h1>
@@ -65,9 +66,8 @@ const Header = () => {
             <span className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-5 dark:bg-gray-300"></span>
           </label>
           <span
-            className={`ml-2 text-sm font-medium uppercase transition-colors ${
-              theme === "dark" ? "text-white" : "text-blue-700"
-            }`}
+            className={`ml-2 text-sm font-medium uppercase transition-colors`}
+            style={{ color: '#1A237E' }}
           >
             {theme === "dark" ? "Dark mode" : "Light mode"}
           </span>

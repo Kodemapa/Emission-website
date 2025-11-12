@@ -56,11 +56,11 @@ const FUEL_TYPES = [
 ];
 
 const EMISSION_TYPES = [
-  { label: "CO2 Emissions", unit: "g/mi" },
-  { label: "Energy Rate", unit: "MWh/mile" },
-  { label: "NOx", unit: "g/mi" },
-  { label: "PM2.5 Brake Wear", unit: "g/mi" },
-  { label: "PM2.5 Tire Wear", unit: "g/mi" },
+  { label: "CO₂ Emissions", display: "CO₂ Emissions", value: "CO₂ Emissions", backend: "CO2 Emissions", unit: "g/mi" },
+  { label: "Energy Rate", display: "Energy Rate", value: "Energy Rate", backend: "Energy Rate", unit: "MWh/mile" },
+  { label: "NOx", display: <>NO<sub>x</sub></>, value: "NOx", backend: "NOx", unit: "g/mi" },
+  { label: "PM2.5 Brake Wear", display: "PM2.5 Brake Wear", value: "PM2.5 Brake Wear", backend: "PM2.5 Brake Wear", unit: "g/mi" },
+  { label: "PM2.5 Tire Wear", display: "PM2.5 Tire Wear", value: "PM2.5 Tire Wear", backend: "PM2.5 Tire Wear", unit: "g/mi" },
 ];
 
 function getRandomColor(idx) {
@@ -198,6 +198,7 @@ export default function EnergyConsumptionAndEmissionRates() {
         backgroundColor: "rgba(0,0,0,0)",
         tension: 0.3,
         pointRadius: 0,
+        borderWidth: 1, // Make lines thinner
         parsing: {
           xAxisKey: "x",
           yAxisKey: "y",
@@ -288,8 +289,6 @@ export default function EnergyConsumptionAndEmissionRates() {
     Seattle: "Seattle",
   };
 
-  // ...existing code...
-
   const ageOptions = useMemo(
     () => Array.from({ length: 30 }, (_, i) => i + 1),
     []
@@ -299,6 +298,7 @@ export default function EnergyConsumptionAndEmissionRates() {
   const fuelType = ConsumptionAndEmissionState.FuelType || "";
   const emissionType = ConsumptionAndEmissionState.EmissionType || "";
   const vehicleAge = ConsumptionAndEmissionState.VehicleAge || "";
+  const selectedEmissionTypeObj = EMISSION_TYPES.find(et => et.value === emissionType || et.label === emissionType) || {};
 
   // Dynamic label for the consumption chart Y axis: show Energy Rate when electricity selected
   const consumptionYAxisLabel =
@@ -366,26 +366,29 @@ export default function EnergyConsumptionAndEmissionRates() {
               Emission Type
             </label>
             <select
-              value={emissionType}
+              value={selectedEmissionTypeObj.value || ""}
               onChange={(e) => {
-                setConsumptionAndEmissionState({
-                  EmissionType: e.target.value,
-                });
+                setConsumptionAndEmissionState({ EmissionType: e.target.value });
               }}
               className="border rounded px-2 py-1 w-48"
+              // Use ref to access the select for custom rendering
             >
               <option value="">Select Emission Type</option>
               {(fuelType === "Electricity"
                 ? EMISSION_TYPES.filter(
                     (et) =>
-                      et.label !== "CO2 Emissions" &&
-                      et.label !== "NOx" &&
-                      et.label !== "Energy Rate"
+                      et.value !== "CO2 Emissions" &&
+                      et.value !== "NOx" &&
+                      et.value !== "Energy Rate"
                   )
-                : EMISSION_TYPES.filter((et) => et.label !== "Energy Rate")
+                : EMISSION_TYPES.filter((et) => et.value !== "Energy Rate")
               ).map((et) => (
-                <option key={et.label} value={et.label}>
-                  {et.label}
+                <option key={et.value} value={et.value}>
+                  {et.value === "CO2 Emissions"
+                    ? 'CO2 Emissions'
+                    : et.value === "NOx"
+                    ? 'NOx'
+                    : et.label}
                 </option>
               ))}
             </select>
@@ -571,7 +574,7 @@ export default function EnergyConsumptionAndEmissionRates() {
                         FuelType: fuelType,
                         VehicleType: vehicleType,
                         Age: parseInt(vehicleAge),
-                        EmissionType: emissionType,
+                        EmissionType: selectedEmissionTypeObj.backend,
                       };
                       console.info(
                         "predict_emissions payload:",
@@ -703,6 +706,38 @@ export default function EnergyConsumptionAndEmissionRates() {
                   maintainAspectRatio: false,
                   plugins: {
                     legend: { display: false },
+                    tooltip: {
+                      enabled: true,
+                      backgroundColor: '#fff', // White background
+                      titleColor: '#222',
+                      bodyColor: '#222',
+                      borderColor: '#ccc',
+                      borderWidth: 1,
+                      callbacks: {
+                        title: (items) => {
+                          // Show vehicle type only
+                          return items[0]?.dataset?.label || '';
+                        },
+                        label: (item) => {
+                          // Show Speed and Y value with axis label
+                          const speed = item.parsed.x;
+                          const value = item.parsed.y;
+                          return [
+                            `Speed: ${speed}`,
+                            `${consumptionYAxisText}: ${value}`
+                          ];
+                        },
+                        labelColor: (item) => {
+                          // Use the dataset's borderColor for the box
+                          return {
+                            borderColor: item.dataset.borderColor,
+                            backgroundColor: item.dataset.borderColor,
+                          };
+                        },
+                        labelTextColor: () => '#222',
+                      },
+                      displayColors: true,
+                    },
                   },
                   parsing: {
                     xAxisKey: "x",
@@ -718,7 +753,6 @@ export default function EnergyConsumptionAndEmissionRates() {
                       display: true,
                       position: "left",
                       title: { display: true, text: consumptionYAxisText },
-                      // Allow negative values by removing beginAtZero
                     },
                   },
                 }}
@@ -743,6 +777,35 @@ export default function EnergyConsumptionAndEmissionRates() {
                   maintainAspectRatio: false,
                   plugins: {
                     legend: { display: false },
+                    tooltip: {
+                      enabled: true,
+                      backgroundColor: '#fff', // White background
+                      titleColor: '#222',
+                      bodyColor: '#222',
+                      borderColor: '#ccc',
+                      borderWidth: 1,
+                      callbacks: {
+                        title: (items) => {
+                          return items[0]?.dataset?.label || '';
+                        },
+                        label: (item) => {
+                          const speed = item.parsed.x;
+                          const value = item.parsed.y;
+                          return [
+                            `Speed: ${speed}`,
+                            `${emissionType || "Selected Emission Type"}: ${value}`
+                          ];
+                        },
+                        labelColor: (item) => {
+                          return {
+                            borderColor: item.dataset.borderColor,
+                            backgroundColor: item.dataset.borderColor,
+                          };
+                        },
+                        labelTextColor: () => '#222',
+                      },
+                      displayColors: true,
+                    },
                   },
                   parsing: {
                     xAxisKey: "x",
@@ -764,13 +827,9 @@ export default function EnergyConsumptionAndEmissionRates() {
                       position: "left",
                       title: {
                         display: true,
-                        text: `${
-                          emissionType || "Selected Emission Type"
-                        } (${emissionUnit})`,
+                        text: `${emissionType || "Selected Emission Type"} (${emissionUnit})`,
                       },
-                      // Ensure axis starts at 0 (simple settings to mirror consumption chart)
                       min: 0,
-                      // Allow negative values by removing beginAtZero
                     },
                   },
                 }}

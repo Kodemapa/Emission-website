@@ -16,7 +16,8 @@ import LosAngelesTF from "../assets/TrafficVolumeCA.png";
 import SeattleTF from "../assets/TrafficVolumeWA.png";
 import NewYorkTF from "../assets/TrafficVolumeNY.png";
 import TractParametersTable from "./TractParametersTable";
-import { toast } from "react-toastify";
+import { toast } from "react-toastify";   
+import TrafficLegend from "../assets/TrafficLegend.jpg";
 registerAllModules();
 
 function VehicleTrafficVolume() {
@@ -138,21 +139,6 @@ function VehicleTrafficVolume() {
             trafficVolumeFile: file,
           });
         }
-        // POST to /process/traffic after upload
-        try {
-          const city = (classificationState.city ?? classificationState.cityInput) || "";
-          const year = classificationState.baseYear || "";
-          const formData = new FormData();
-          formData.append("city_name", city);
-          formData.append("year", year);
-          formData.append("parameters_file", file);
-          await fetch("http://127.0.0.1:5003/process/traffic", {
-            method: "POST",
-            body: formData,
-          });
-        } catch (err) {
-          toast.error("Traffic volume processing failed");
-        }
       } else if (type === "mftParameters") {
         if (parsed.length) {
           setTrafficState({
@@ -166,6 +152,34 @@ function VehicleTrafficVolume() {
             trafficMFTParametersData: [],
             trafficMFTParametersFile: file,
           });
+        }
+        // POST to /process/traffic after upload
+        try {
+          const city = (classificationState.city ?? classificationState.cityInput) || "";
+          const year = classificationState.baseYear || "";
+          const formData = new FormData();
+          formData.append("city_name", city);
+          formData.append("year", year);
+          formData.append("parameters_file", file);
+          await fetch("http://127.0.0.1:5003/process/traffic", {
+            method: "POST",
+            body: formData,
+          });
+          // Image logic: fetch traffic plot image from backend
+          try {
+            if (!city || !year) return;
+            const url = `http://127.0.0.1:5003/plot/traffic/${encodeURIComponent(city)}/${encodeURIComponent(year)}`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("Failed to fetch traffic plot image");
+            const blob = await res.blob();
+            const imgUrl = URL.createObjectURL(blob);
+            setTrafficPlotImg(imgUrl);
+          } catch (err) {
+            setTrafficPlotImg(null);
+            toast.error("Failed to load traffic plot image");
+          }
+        } catch (err) {
+          toast.error("MFD parameters processing failed");
         }
       }
 
@@ -300,8 +314,26 @@ function VehicleTrafficVolume() {
                 className="w-full max-h-[350px] object-contain rounded"
               />
             ) : null}
+            {/* Traffic Legend Image: only show when trafficPlotImg is visible */}
+            {trafficPlotImg && (
+              <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <img
+                  src={TrafficLegend}
+                  alt="Traffic Legend"
+                  className="max-w-[350px] object-contain rounded mt-4"
+                  style={{ display: 'block' }}
+                />
+              </div>
+            )}
             {/* Show MFD Parameters Table only */}
-            <TractParametersTable trafficState={trafficState} />
+            {hasMFTParametersData && (
+              <div style={{margin:0,padding:0}}>
+                <div className="bg-[#f7f7f9] text-[#222222] text-center box-border font-semibold border border-solid border-[#cccccc] rounded-none" style={{borderRadius:0}}>
+                  <span>Macroscopic Traffic Model Parameters</span>
+                </div>
+                <TractParametersTable trafficState={trafficState} />
+              </div>
+            )}
           </>
         )}
       </div>

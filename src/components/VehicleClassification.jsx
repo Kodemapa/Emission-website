@@ -1,4 +1,3 @@
-
 import React from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -14,7 +13,6 @@ import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
 import useAppStore from "../useAppStore";
-import { toast } from "react-toastify";
 
 
 function VehicleClassification({ activeStep }) {
@@ -91,14 +89,18 @@ function VehicleClassification({ activeStep }) {
           "Transaction ID is missing or invalid:",
           data.transaction_id
         );
-        toast.error(
-          "Transaction ID not received from backend. Please try again."
+        window.dispatchEvent(
+          new CustomEvent("app-notification", { detail: { text: "Error: Please select a city and upload a valid file." } })
         );
       }
 
-      toast.success("Data uploaded successfully!");
+      window.dispatchEvent(
+        new CustomEvent("app-notification", { detail: { text: "Data uploaded successfully!" } })
+      );
     } catch (err) {
-      toast.error("Upload failed: " + err.message);
+      window.dispatchEvent(
+        new CustomEvent("app-notification", { detail: { text: "Upload failed: " + err.message } })
+      );
     }
   };
   const filterByVehicle = React.useCallback((rows, vehicleType) => {

@@ -4,7 +4,6 @@ import VehicleClassification from "./VehicleClassification";
 import VehiclePenetration from "./VehiclePenetration";
 import VehicleTrafficVolume from "./VehicleTrafficVolume";
 import ProjectedDemand from "./ProjectedDemand";
-import { toast } from "react-toastify";
 
 const steps = [
   "Vehicle Classification Data",
@@ -64,10 +63,14 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
             console.log("Transaction ID stored:", data.transaction_id);
           }
           lastSentDataRef.current = formData;
-          toast.success("Data uploaded successfully");
+          window.dispatchEvent(
+            new CustomEvent("app-notification", { detail: { text: "Data uploaded successfully" } })
+          );
         } catch (err) {
           console.error("Upload error:", err);
-          toast.success("Data uploaded successfully (mocked)");
+          window.dispatchEvent(
+            new CustomEvent("app-notification", { detail: { text: "Data uploaded successfully (mocked)" } })
+          );
           lastSentDataRef.current = formData;
         }
       }
@@ -101,10 +104,14 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
           if (!res.ok) throw new Error("Upload failed");
           const data = await res.json();
           console.log("Backend response:", data);
-          toast.success("Data uploaded successfully!");
+          window.dispatchEvent(
+            new CustomEvent("app-notification", { detail: { text: "Data uploaded successfully!" } })
+          );
         } catch (err) {
           console.error("Upload error:", err);
-          toast.error("Upload failed: " + err.message);
+          window.dispatchEvent(
+            new CustomEvent("app-notification", { detail: { text: "Upload failed: " + err.message } })
+          );
         }
       }
     }
@@ -116,7 +123,9 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
       
       // Check if both files exist
       if (!state.trafficVolumeFile || !state.trafficMFTParametersFile) {
-        toast.error("Please upload both Traffic Volume and MFD Parameters files");
+        window.dispatchEvent(
+          new CustomEvent("app-notification", { detail: { text: "Please upload both Traffic Volume and MFD Parameters files" } })
+        );
         return;
       }
 
@@ -144,14 +153,18 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
 
         const data = await res.json();
         console.log("Backend response:", data);
-        toast.success("Traffic data uploaded successfully!");
+        window.dispatchEvent(
+          new CustomEvent("app-notification", { detail: { text: "Traffic data uploaded successfully!" } })
+        );
 
         if (data.transaction_id) {
           localStorage.setItem("transaction_id", data.transaction_id);
         }
       } catch (err) {
         console.error("Upload error:", err);
-        toast.error("Upload failed: " + err.message);
+        window.dispatchEvent(
+          new CustomEvent("app-notification", { detail: { text: "Upload failed: " + err.message } })
+        );
         return; // Don't proceed to next step on error
       }
     }
@@ -201,7 +214,9 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
           if (!res.ok) throw new Error("Upload failed");
           const respData = await res.json();
           console.log("Backend response:", respData);
-          toast.success("Data uploaded successfully!");
+          window.dispatchEvent(
+            new CustomEvent("app-notification", { detail: { text: "Data uploaded successfully!" } })
+          );
           
           // Store transaction_id for later use
           if (respData.transaction_id) {
@@ -209,7 +224,9 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
           }
         } catch (err) {
           console.error("Upload error:", err);
-          toast.error("Upload failed: " + err.message);
+          window.dispatchEvent(
+            new CustomEvent("app-notification", { detail: { text: "Upload failed: " + err.message } })
+          );
         }
       }
     }
@@ -237,19 +254,22 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="w-full max-w-3xl mx-auto flex flex-row justify-between gap-4 mt-2">
+      <div className="w-full max-w-7xl mx-auto flex flex-row items-center mt-2" style={{ justifyContent: 'space-between' }}>
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+          className={`${activeStep === 0 ? 'bg-gray-500' : 'bg-blue-500'} text-white px-4 py-2 rounded disabled:opacity-50`}
           onClick={handleBack}
           disabled={activeStep === 0}
+          style={{ minWidth: 100 }}
         >
           Back
         </button>
+        <div style={{ flex: 1 }} />
         <div>
           {activeStep < steps.length - 1 && (
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded"
               onClick={handleNext}
+              style={{ minWidth: 100 }}
             >
               Next
             </button>
@@ -303,7 +323,9 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
                     if (!res.ok) throw new Error("Upload failed");
                     const respData = await res.json();
                     console.log("Backend response:", respData);
-                    toast.success("Data uploaded successfully!");
+                    window.dispatchEvent(
+                      new CustomEvent("app-notification", { detail: { text: "Data uploaded successfully!" } })
+                    );
                     
                     // Store transaction_id for later use
                     if (respData.transaction_id) {
@@ -311,13 +333,16 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
                     }
                   } catch (err) {
                     console.error("Upload error:", err);
-                    toast.error("Upload failed: " + err.message);
+                    window.dispatchEvent(
+                      new CustomEvent("app-notification", { detail: { text: "Upload failed: " + err.message } })
+                    );
                   }
                 }
                 
                 // Then navigate to analysis page
                 finalNext();
               }}
+              style={{ minWidth: 140 }}
             >
               Go to Analysis
             </button>

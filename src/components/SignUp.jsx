@@ -2,8 +2,6 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { toast } from "react-toastify";
-// import authService from "../utilities/authService";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -28,18 +26,24 @@ const SignUp = () => {
     try {
       //   await authService.register(payload);
       console.log("Registration payload:", payload);
-      toast.success("Successful sign up! Please sign in.");
+      window.dispatchEvent(
+        new CustomEvent("app-notification", { detail: { text: "Successful sign up! Please sign in." } })
+      );
       navigate("/signin");
     } catch (error) {
       if (
         error.response?.status === 400 &&
         error.response?.data?.error === "User with this username already exists"
       ) {
-        toast.info("User already exists. Please sign in.");
+        window.dispatchEvent(
+          new CustomEvent("app-notification", { detail: { text: "User already exists. Please sign in." } })
+        );
         navigate("/signin");
       } else {
         console.error("Registration failed:", error);
-        toast.error("Registration failed. Please try again.");
+        window.dispatchEvent(
+          new CustomEvent("app-notification", { detail: { text: "Registration failed. Please try again." } })
+        );
       }
     }
   };

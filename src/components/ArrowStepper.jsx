@@ -250,13 +250,16 @@ export default function ArrowStepper() {
               if (activeStep === 0) {
                 stepperActiveStep = inputSubStep;
                 stepperSteps = inputSteps;
+                return <VehicleStepper activeStep={stepperActiveStep} steps={stepperSteps} onStepChange={setInputSubStep} />;
               } else if (activeStep === 1) {
                 stepperActiveStep = analysisSubStep;
                 stepperSteps = analysisSteps;
+                return <VehicleStepper activeStep={stepperActiveStep} steps={stepperSteps} onStepChange={setAnalysisSubStep} />;
               } else if (activeStep === 2) {
                 // Use Vehicle/Grid selection from FinalResultsPage
                 stepperActiveStep = resultsSelection === "GRID" ? 1 : 0;
                 stepperSteps = analysisSteps;
+                return <VehicleStepper activeStep={stepperActiveStep} steps={stepperSteps} />;
               }
               return <VehicleStepper activeStep={stepperActiveStep} steps={stepperSteps} />;
             })()}

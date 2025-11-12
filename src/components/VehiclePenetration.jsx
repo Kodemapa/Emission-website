@@ -13,7 +13,6 @@ import Seattle from "../assets/Seattle.svg";
 import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
 import useAppStore from "../useAppStore";
-import { toast } from "react-toastify";
 
 registerAllModules();
 
@@ -124,10 +123,14 @@ function VehiclePenetration({ activeStep }) {
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
       console.log("Backend response:", data);
-      toast.success("Data uploaded successfully!");
+      window.dispatchEvent(
+        new CustomEvent("app-notification", { detail: { text: "Vehicle penetration data saved successfully!" } })
+      );
       // Optionally show a message or move to next page
     } catch (err) {
-      toast.error("Upload failed: " + err.message);
+      window.dispatchEvent(
+        new CustomEvent("app-notification", { detail: { text: "Error: Please enter a valid value for all fields." } })
+      );
     }
     // Don't change pagination here - this is for step progression
   };
