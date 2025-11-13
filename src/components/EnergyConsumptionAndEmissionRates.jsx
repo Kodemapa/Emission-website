@@ -58,7 +58,7 @@ const FUEL_TYPES = [
 const EMISSION_TYPES = [
   { label: "CO₂ Emissions", display: "CO₂ Emissions", value: "CO₂ Emissions", backend: "CO2 Emissions", unit: "g/mi" },
   { label: "Energy Rate", display: "Energy Rate", value: "Energy Rate", backend: "Energy Rate", unit: "MWh/mile" },
-  { label: "NOx", display: <>NO<sub>x</sub></>, value: "NOx", backend: "NOx", unit: "g/mi" },
+  { label: "NOₓ", display: "NOₓ", value: "NOₓ", backend: "NOx", unit: "g/mi" },
   { label: "PM2.5 Brake Wear", display: "PM2.5 Brake Wear", value: "PM2.5 Brake Wear", backend: "PM2.5 Brake Wear", unit: "g/mi" },
   { label: "PM2.5 Tire Wear", display: "PM2.5 Tire Wear", value: "PM2.5 Tire Wear", backend: "PM2.5 Tire Wear", unit: "g/mi" },
 ];
@@ -349,7 +349,7 @@ export default function EnergyConsumptionAndEmissionRates() {
               onChange={(e) => {
                 setConsumptionAndEmissionState({ FuelType: e.target.value });
               }}
-              className="border rounded px-2 py-1 w-48"
+              className="border rounded px-2 py-1 w-70"
             >
               <option value="">Select Fuel Type</option>
               {FUEL_TYPES.map((ft) => (

@@ -76,7 +76,7 @@ const Notifications = () => {
   }, []);
 
   return (
-    <div className="relative w-full" ref={wrapperRef}>
+  <div className="relative w-full" ref={wrapperRef}>
       <button
         type="button"
         className={`text-center rounded-sm flex items-center justify-between border-2 w-full px-2 py-1 transition-colors duration-300 focus:outline-none focus:ring-2 ${btnTheme}`}
@@ -101,7 +101,8 @@ const Notifications = () => {
           role="menu"
           className={`absolute left-0 right-0 mt-1 rounded-md border z-50 transition-colors duration-300 ${menuTheme}`}
         >
-          <ul className="max-h-80 overflow-auto py-1">
+          {/* Show all notifications, but only 4 visible at a time with scroll */}
+          <ul className="max-h-48 overflow-auto py-1">
             {notifications.slice().reverse().map((n) => (
               <li key={n.id} role="menuitem">
                 <div

@@ -170,10 +170,10 @@ function ProjectedDemand() {
 
   // Helper to map city to image file base name
   const cityToFile = {
-    Atlanta: "Georgia",
-    "Los Angeles": "California",
-    Seattle: "Washington",
-    NewYork: "Newyork",
+    Atlanta: "GA",
+    "Los Angeles": "CA",
+    Seattle: "WA",
+    NewYork: "NY",
     "New York": "Newyork",
     "LosAngeles": "California",
     Georgia: "Georgia",
@@ -216,8 +216,8 @@ function ProjectedDemand() {
     // Always use cityToFile mapping for the filename
     const fileCity = cityToFile[mappedCity] || mappedCity;
     
-    // This path is now correct because /ProjectionDemand is in your public folder
-    const imgFile = `/ProjectionDemand/${year}_${fileCity}.png`;
+    // This path is now correct because /projected-demand-images is in your public folder
+    const imgFile = `/projected-demand-images/${fileCity}_${year}.png`;
     
     console.log('[ProjectedDemand] mappedCity:', mappedCity, 'fileCity:', fileCity, 'year:', year, 'imgFile:', imgFile);
     projectedImg = imgFile;

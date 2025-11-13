@@ -16,7 +16,7 @@ const useAppStore = create((set, get) => ({
   addNotification: (text) =>
     set((state) => ({
       notifications: [
-        ...state.notifications.slice(-3), // keep last 3, add new for max 4
+        ...state.notifications,
         { id: Date.now(), text, at: Date.now(), read: false },
       ],
     })),

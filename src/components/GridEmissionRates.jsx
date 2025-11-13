@@ -187,9 +187,9 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
               className="border rounded px-2 py-1 w-56"
             >
               <option value="">Select Grid Emission Type</option>
-              <option value="CO2">CO2</option>
-              <option value="N2O">N2O</option>
-              <option value="CH4">CH4</option>
+              <option value="CO2">CO₂</option>
+              <option value="N2O">N₂O</option>
+              <option value="CH4">CH₄</option>
             </select>
           </div>
           <div className="flex flex-col gap-1">

@@ -24,6 +24,7 @@ function VehicleTrafficVolume() {
   const classificationState = useAppStore((s) => s.classificationState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
   const setTrafficState = useAppStore((s) => s.setTrafficVolumeState);
+  const addNotification = useAppStore.getState().addNotification;
 
   // Show data/results only after Estimate Speed is clicked
   const [showResults, setShowResults] = React.useState(false);
@@ -53,8 +54,9 @@ function VehicleTrafficVolume() {
 
     // Check if both files are selected
     if (!trafficVolumeFile || !mftParametersFile) {
-      toast.error("Please select both Traffic Volume and MFT Parameters files");
-      return;
+  const msg = "Please select both Traffic Volume and MFT Parameters files";
+  addNotification(msg);
+  return;
     }
 
     // Prepare FormData for backend
@@ -79,8 +81,10 @@ function VehicleTrafficVolume() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Upload failed");
+  const errorData = await res.json();
+  const msg = errorData.error || "Upload failed";
+  addNotification(msg);
+  throw new Error(msg);
       }
 
       const data = await res.json();
@@ -92,8 +96,9 @@ function VehicleTrafficVolume() {
         localStorage.setItem("transaction_id", data.transaction_id);
       }
     } catch (err) {
-      console.error("Upload error:", err);
-      toast.error("Upload failed: " + err.message);
+  console.error("Upload error:", err);
+  const msg = "Upload failed: " + err.message;
+  addNotification(msg);
     }
   };
 
@@ -176,10 +181,12 @@ function VehicleTrafficVolume() {
             setTrafficPlotImg(imgUrl);
           } catch (err) {
             setTrafficPlotImg(null);
-            toast.error("Failed to load traffic plot image");
+            const msg = "Failed to load traffic plot image";
+            addNotification(msg);
           }
         } catch (err) {
-          toast.error("MFD parameters processing failed");
+  const msg = "MFD parameters processing failed";
+  addNotification(msg);
         }
       }
 
@@ -289,7 +296,8 @@ function VehicleTrafficVolume() {
                 setTrafficPlotImg(imgUrl);
               } catch (err) {
                 setTrafficPlotImg(null);
-                toast.error("Failed to load traffic plot image");
+                const msg = "Failed to load traffic plot image";
+                addNotification(msg);
               }
             }}
             disabled={!(hasTrafficVolumeData && hasMFTParametersData)}

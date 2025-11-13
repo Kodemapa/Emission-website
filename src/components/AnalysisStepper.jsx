@@ -59,31 +59,51 @@ function AnalysisStepper({ finalNext, activeStep, setActiveStep }) {
       </div>
 
       {/* Navigation Buttons */}
-      <div className={activeStep === 0 ? "w-full max-w-3xl mx-auto flex flex-row justify-between gap-4 mt-2" : "flex flex-row gap-4 mt-4 w-full justify-center"}>
-
+      {activeStep === 0 ? (
+        <div className="w-full max-w-3xl mx-auto flex flex-row items-center gap-6 mt-2">
+          <button
+            onClick={handleBack}
+            className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors -ml-24"
+          >
+            Back
+          </button>
+          <div className="flex flex-row items-center gap-2 w-full relative" style={{ minHeight: '56px' }}>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50 absolute"
+              style={{ minWidth: '90px', right: '-300px' }}
+              onClick={handleNext}
+              disabled={activeStep === 1}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-row gap-4 mt-4 w-full justify-center items-center">
           <button
             onClick={handleBack}
             className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
           >
             Back
           </button>
-
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
-          onClick={handleNext}
-          disabled={activeStep === 1}
-        >
-          Next
-        </button>
-        {activeStep === 1 && (
           <button
-            className="bg-green-600 text-white px-4 py-2 rounded ml-2"
-            onClick={finalNext}
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+            onClick={handleNext}
+            disabled={activeStep === 1}
           >
-            Go to Results
+            Next
           </button>
-        )}
-      </div>
+          {activeStep === 1 && (
+            <button
+              className="bg-green-600 text-white px-4 py-2 rounded ml-2"
+              onClick={finalNext}
+              style={{ minWidth: '120px' }}
+            >
+              Go to Results
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

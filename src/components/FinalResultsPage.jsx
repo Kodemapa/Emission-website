@@ -71,10 +71,10 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
     "Gasoline",
   ];
   const EMISSION_TYPES = [
-    { label: "CO2", unit: "g/mi" },
-    { label: "NOx", unit: "g/mi" },
-    { label: "PM2.5B", unit: "g/mi" },
-    { label: "PM2.5T", unit: "g/mi" },
+    { label: "CO₂",value: 'CO2', unit: "g/mi" },
+    { label: "NOₓ", value: 'NOx', unit: "g/mi" },
+    { label: "PM2.5B", value: 'PM2.5B', unit: "g/mi" },
+    { label: "PM2.5T", value: 'PM2.5T', unit: "g/mi" },
   ];
   const cityName = classificationState.city || classificationState.cityInput;
   const fuelType = ConsumptionAndEmissionState.FuelType || "";
@@ -240,9 +240,7 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
               >
                 <option value="">Select Emission Type</option>
                 {EMISSION_TYPES.map((et) => (
-                  <option key={et.label} value={et.label}>
-                    {et.label}
-                  </option>
+                  <option key={et.label} value={et.value} dangerouslySetInnerHTML={{ __html: et.label }} />
                 ))}
               </select>
             </div>
@@ -275,25 +273,25 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
             <div className="flex flex-col gap-8 flex-1">
               {fuelType && fuelSrc && (
                 <>
-                  <div style={{ fontWeight: 400, fontSize: 16, marginBottom: 8, marginTop: 0, textAlign: 'center' }}>
-                    {fuelType} Consumption
-                  </div>
                   <img
                     src={fuelSrc}
                     className="max-w-[700px] w-full h-auto object-contain rounded"
                     alt="Fuel consumption chart"
                   />
+                  <div style={{ fontWeight: 400, fontSize: 16, marginTop: -40, textAlign: 'center' }}>
+                    {fuelType} Consumption
+                  </div>
                 </>
               )}
               {emissionType && emissionSrc && (
                 <>
-                  <div style={{ fontWeight: 400, fontSize: 16, marginBottom: 8, marginTop: 0, textAlign: 'center' }}>
-                    {emissionType} Emission
-                  </div>
                   <img
                     src={emissionSrc}
                     className="max-w-[700px] w-full h-auto object-contain rounded"
                     alt="Emission chart"
+                  />
+                  <div style={{ fontWeight: 400, fontSize: 16, marginTop: -40, textAlign: 'center' }}
+                    dangerouslySetInnerHTML={{ __html: `${emissionType.replace('CO2', 'CO<sub>2</sub>').replace('NOx', 'NO<sub>x</sub>') } Emission` }}
                   />
                 </>
               )}
