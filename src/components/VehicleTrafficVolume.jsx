@@ -20,22 +20,23 @@ import { toast } from "react-toastify";
 import TrafficLegend from "../assets/TrafficLegend.jpg";
 registerAllModules();
 
+
 function VehicleTrafficVolume() {
   const classificationState = useAppStore((s) => s.classificationState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
   const setTrafficState = useAppStore((s) => s.setTrafficVolumeState);
   const addNotification = useAppStore.getState().addNotification;
 
-  // Show data/results only after Estimate Speed is clicked
-  const [showResults, setShowResults] = React.useState(false);
-  const [trafficPlotImg, setTrafficPlotImg] = React.useState(null);
+  // Persist showResults and trafficPlotImg in global state
+  const showResults = trafficState.showResults || false;
+  const trafficPlotImg = trafficState.trafficPlotImg || null;
 
-  // Auto-show results if speed was estimated before (e.g., when navigating back from next page)
+  // Restore showResults and trafficPlotImg on mount if data exists
   React.useEffect(() => {
-    if (trafficState.speedEstimated) {
-      setShowResults(true);
+    if (trafficState.speedEstimated && (trafficState.trafficVolumeData?.length > 0 || trafficState.trafficMFTParametersData?.length > 0)) {
+      setTrafficState({ showResults: true });
     }
-  }, [trafficState.speedEstimated]);
+  }, [trafficState.speedEstimated, trafficState.trafficVolumeData, trafficState.trafficMFTParametersData, setTrafficState]);
 
   // Submit data to backend - called by parent component during step navigation
   // eslint-disable-next-line no-unused-vars
@@ -178,15 +179,15 @@ function VehicleTrafficVolume() {
             if (!res.ok) throw new Error("Failed to fetch traffic plot image");
             const blob = await res.blob();
             const imgUrl = URL.createObjectURL(blob);
-            setTrafficPlotImg(imgUrl);
+            setTrafficState({ trafficPlotImg: imgUrl });
           } catch (err) {
-            setTrafficPlotImg(null);
+            setTrafficState({ trafficPlotImg: null });
             const msg = "Failed to load traffic plot image";
             addNotification(msg);
           }
         } catch (err) {
-  const msg = "MFD parameters processing failed";
-  addNotification(msg);
+          const msg = "MFD parameters processing failed";
+          addNotification(msg);
         }
       }
 
@@ -229,8 +230,8 @@ function VehicleTrafficVolume() {
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 rounded">
-          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 w-48 whitespace-nowrap justify-center">
-            <span className="mr-2">Traffic Volume</span>
+          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 min-w-[160px] whitespace-nowrap justify-center">
+            <span className="mr-2 whitespace-nowrap">Traffic Volume</span>
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
               type="file"
@@ -239,8 +240,8 @@ function VehicleTrafficVolume() {
               className="hidden"
             />
           </label>
-          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 w-48 whitespace-nowrap justify-center ml-4">
-            <span className="mr-2 ml-2">MFD Parameters</span>
+          <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 min-w-[160px] whitespace-nowrap justify-center ml-4">
+            <span className="mr-2 ml-2 whitespace-nowrap">MFD Parameters</span>
             <CloudUpload className="ml-2 w-5 h-5" />
             <input
               type="file"
@@ -279,10 +280,9 @@ function VehicleTrafficVolume() {
           </div>
           <button
             type="button"
-            className="px-6 py-2 bg-blue-500 text-white rounded font-semibold h-10 min-w-[140px] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-blue-500 text-white rounded font-semibold h-10 min-w-[160px] whitespace-nowrap hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={async () => {
-              setShowResults(true);
-              setTrafficState({ speedEstimated: true });
+              setTrafficState({ showResults: true, speedEstimated: true });
               // Fetch traffic plot image from backend
               try {
                 const city = (classificationState.city ?? classificationState.cityInput) || "";
@@ -293,9 +293,9 @@ function VehicleTrafficVolume() {
                 if (!res.ok) throw new Error("Failed to fetch traffic plot image");
                 const blob = await res.blob();
                 const imgUrl = URL.createObjectURL(blob);
-                setTrafficPlotImg(imgUrl);
+                setTrafficState({ trafficPlotImg: imgUrl });
               } catch (err) {
-                setTrafficPlotImg(null);
+                setTrafficState({ trafficPlotImg: null });
                 const msg = "Failed to load traffic plot image";
                 addNotification(msg);
               }
@@ -307,32 +307,22 @@ function VehicleTrafficVolume() {
         </form>
 
         {/* Show data/results only after Estimate Speed is clicked AND speedEstimated flag is set */}
-        {showResults && trafficState.speedEstimated && (
+  {showResults && trafficState.speedEstimated && trafficPlotImg && (
           <>
-            {trafficPlotImg ? (
-              <img
-                src={trafficPlotImg}
-                alt="Traffic Plot"
-                className="w-full max-h-[350px] object-contain rounded"
-              />
-            ) : srcImg ? (
-              <img
-                src={srcImg}
-                alt={city}
-                className="w-full max-h-[350px] object-contain rounded"
-              />
-            ) : null}
+            <img
+              src={trafficPlotImg}
+              alt="Traffic Plot"
+              className="w-full max-h-[350px] object-contain rounded"
+            />
             {/* Traffic Legend Image: only show when trafficPlotImg is visible */}
-            {trafficPlotImg && (
-              <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <img
-                  src={TrafficLegend}
-                  alt="Traffic Legend"
-                  className="max-w-[350px] object-contain rounded mt-4"
-                  style={{ display: 'block' }}
-                />
-              </div>
-            )}
+            <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+              <img
+                src={TrafficLegend}
+                alt="Traffic Legend"
+                className="max-w-[350px] object-contain rounded mt-4"
+                style={{ display: 'block' }}
+              />
+            </div>
             {/* Show MFD Parameters Table only */}
             {hasMFTParametersData && (
               <div style={{margin:0,padding:0}}>

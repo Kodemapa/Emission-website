@@ -19,8 +19,8 @@ function VehicleClassification({ activeStep }) {
   const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const setClassificationState = useAppStore((s) => s.setClassificationState);
-  const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
-  const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
+  const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "New York"];
+  const cityImages = { "Atlanta": Atlanta, "Los Angeles": LosAngeles, "Seattle": Seattle, "New York": NewYork };
   const verticalSteps = [
     "Vehicle Classification Data",
     "Projected Vehicle Penetration Rate Data",
@@ -266,7 +266,7 @@ function VehicleClassification({ activeStep }) {
                   onChange={(e) =>
                     setClassificationState({
                       cityInput: e.target.value,
-                      city: e.target.value.replace(/\s+/g, ""),
+                      city: e.target.value,
                     })
                   }
                   className={`border rounded px-2 py-1 w-full transition-colors duration-300 ${

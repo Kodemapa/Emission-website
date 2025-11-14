@@ -79,29 +79,22 @@ function AnalysisStepper({ finalNext, activeStep, setActiveStep }) {
           </div>
         </div>
       ) : (
-        <div className="flex flex-row gap-4 mt-4 w-full justify-center items-center">
+        <div className="flex flex-row mt-4 w-full items-center justify-between px-8">
           <button
             onClick={handleBack}
             className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+            style={{ marginLeft: '150px' }}
           >
             Back
           </button>
+          <div></div>
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
-            onClick={handleNext}
-            disabled={activeStep === 1}
+            className="bg-green-600 text-white px-4 py-2 rounded"
+            onClick={finalNext}
+            style={{ minWidth: '120px', marginRight: '20px' }}
           >
-            Next
+            Go to Results
           </button>
-          {activeStep === 1 && (
-            <button
-              className="bg-green-600 text-white px-4 py-2 rounded ml-2"
-              onClick={finalNext}
-              style={{ minWidth: '120px' }}
-            >
-              Go to Results
-            </button>
-          )}
         </div>
       )}
     </div>

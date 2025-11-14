@@ -145,7 +145,10 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
 
     await downloadImage(url, filename);
 
-    toast.success("Download started");
+    // Use global notification system instead of toast
+    if (typeof useAppStore.getState().addNotification === 'function') {
+      useAppStore.getState().addNotification("Download started");
+    }
   };
 
   return (

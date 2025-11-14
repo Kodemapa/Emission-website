@@ -23,7 +23,7 @@ function VehiclePenetration({ activeStep }) {
   const setPenetrationState = useAppStore((s) => s.setPenetrationState);
   const setClassificationState = useAppStore((s) => s.setClassificationState);
 
-  const cityImages = { Atlanta, LosAngeles, Seattle, NewYork };
+  const cityImages = { "Atlanta": Atlanta, "Los Angeles": LosAngeles, "Seattle": Seattle, "New York": NewYork };
   const verticalSteps = [
     "Vehicle Classification Data",
     "Projected Vehicle Penetration Rate Data",
@@ -232,24 +232,23 @@ function VehiclePenetration({ activeStep }) {
       <div className="flex flex-col gap-6">
         <form className="flex items-end gap-4 p-4 rounded">
           <label
-            className={`flex items-center font-semibold px-4 py-2 rounded cursor-pointer h-[32px] ${
+            className={`flex items-center font-semibold px-4 py-2 rounded cursor-pointer h-[32px] whitespace-nowrap min-w-[180px] ${
               theme === "dark"
                 ? "bg-blue-900 text-white"
                 : "bg-blue-400 text-white"
             }`}
           >
-            <span className="flex items-center gap-2 w-full justify-center">
-                              Projected Penetration
-                              <CloudUpload className="w-4 h-4" />
-                            </span>
-                            <input
-                              type="file"
-                              accept=".xlsx, .xls, .csv"
-                              onChange={handleFileChange}
-                              disabled={classificationState.city === ""}
-                              className="hidden"
-                            />
-            
+            <span className="flex items-center gap-2 w-full justify-center whitespace-nowrap">
+              Projected Penetration
+              <CloudUpload className="w-4 h-4" />
+            </span>
+            <input
+              type="file"
+              accept=".xlsx, .xls, .csv"
+              onChange={handleFileChange}
+              disabled={classificationState.city === ""}
+              className="hidden"
+            />
           </label>
 
           {/* Base Year Dropdown (disabled) */}

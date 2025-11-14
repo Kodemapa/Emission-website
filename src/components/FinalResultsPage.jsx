@@ -272,28 +272,28 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
           <>
             <div className="flex flex-col gap-8 flex-1">
               {fuelType && fuelSrc && (
-                <>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
                   <img
                     src={fuelSrc}
                     className="max-w-[700px] w-full h-auto object-contain rounded"
                     alt="Fuel consumption chart"
                   />
-                  <div style={{ fontWeight: 400, fontSize: 16, marginTop: -40, textAlign: 'center' }}>
+                  <div style={{ fontWeight: 400, fontSize: 16, marginTop: -20, textAlign: 'center', width: 'auto' }}>
                     {fuelType} Consumption
                   </div>
-                </>
+                </div>
               )}
               {emissionType && emissionSrc && (
-                <>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
                   <img
                     src={emissionSrc}
                     className="max-w-[700px] w-full h-auto object-contain rounded"
                     alt="Emission chart"
                   />
-                  <div style={{ fontWeight: 400, fontSize: 16, marginTop: -40, textAlign: 'center' }}
+                  <div style={{ fontWeight: 400, fontSize: 16, marginTop: -20, textAlign: 'center', width: 'auto' }}
                     dangerouslySetInnerHTML={{ __html: `${emissionType.replace('CO2', 'CO<sub>2</sub>').replace('NOx', 'NO<sub>x</sub>') } Emission` }}
                   />
-                </>
+                </div>
               )}
             </div>
             <div className="flex flex-col gap-4 flex-shrink-0 ml-auto">
