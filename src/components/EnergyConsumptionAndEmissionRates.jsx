@@ -521,7 +521,6 @@ export default function EnergyConsumptionAndEmissionRates() {
                           } catch {
                             const sanitized = txt.replace(/\bNaN\b/g, "null");
                             consumptionData = JSON.parse(sanitized);
-                            // addNotification("consumption response contained NaN - parsed after sanitizing");
                           }
                         } catch (e) {
                           throw new Error(
@@ -536,7 +535,9 @@ export default function EnergyConsumptionAndEmissionRates() {
                               JSON.stringify(consumptionData)
                           );
                         }
-                        consumptionData.forEach((item) => {
+                        // Only add the value for the speed we requested
+                        const item = consumptionData.find((d) => d.speed === speed);
+                        if (item) {
                           const consumptionValue =
                             item.fuel_consumption !== null
                               ? item.fuel_consumption
@@ -547,7 +548,7 @@ export default function EnergyConsumptionAndEmissionRates() {
                             consumption: consumptionValue,
                             unit: item.fuel_unit || item.energy_unit,
                           });
-                        });
+                        }
                       }
 
                       setVehicleData((prev) => ({
