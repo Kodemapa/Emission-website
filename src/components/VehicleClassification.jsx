@@ -181,7 +181,7 @@ function VehicleClassification({ activeStep }) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 pt-4 transition-colors duration-300 w-full max-w-full justify-center">
+    <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       {/* Left panel: form + table */}
       <div className="flex-1 flex flex-col items-center">
         <div className="w-full max-w-3xl mx-auto flex flex-col gap-6">
@@ -371,12 +371,12 @@ function VehicleClassification({ activeStep }) {
       </div>
 
       {/* Right panel: only map image if available */}
-      <div className="flex flex-col gap-6 justify-center items-center w-full md:w-[300px] max-w-[400px] mx-auto md:mx-0">
+      <div className="flex flex-col gap-6">
         {classificationState.city && cityImages[classificationState.city] && (
           <img
             src={cityImages[classificationState.city]}
             alt={classificationState.city}
-            className="w-full max-h-[300px] md:max-h-[500px] object-contain rounded"
+            className="w-full h-[500px] object-contain rounded"
           />
         )}
       </div>

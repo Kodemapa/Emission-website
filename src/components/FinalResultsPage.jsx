@@ -267,8 +267,8 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
       </div>
 
       {/* Content Area - Charts and Map */}
-      <div className="flex flex-row gap-6">
-  {resultsSelection === "VEHICLE" && (
+        <div className="flex flex-row gap-6 items-center">
+      {resultsSelection === "VEHICLE" && (
           <>
             <div className="flex flex-col gap-8 flex-1">
               {fuelType && fuelSrc && (
@@ -348,7 +348,7 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
         )}
         
   {resultsSelection === "GRID" && (
-           <div className="flex flex-row gap-6">
+           <div className="flex flex-row gap-16 items-center">
             <div className="flex flex-col gap-6 flex-1">
               <img
                 src={getR3EmissionImgUrl("CO2", cityName)}
@@ -366,12 +366,12 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
                 alt="N2O Grid Emission"
               />
             </div>
-            <div className="flex flex-col gap-4 flex-shrink-0 ml-auto">
+            <div className="flex flex-col gap-4 flex-shrink-0">
               <img
                 src={gridData}
                 alt="Grid Scenarios Legend"
                 className="h-[320px] object-contain rounded border border-gray-100"
-                style={{ maxWidth: '420px' }}
+                style={{ maxWidth: '420px', marginTop: '-30px' }}
               />
             </div>
           </div>

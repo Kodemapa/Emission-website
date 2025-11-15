@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import useAppStore from "../useAppStore";
 import Atlanta from "../assets/Georgia.svg";
 import LosAngeles from "../assets/California.svg";
@@ -104,8 +104,10 @@ export default function EnergyConsumptionAndEmissionRates() {
     useState(null);
   const [lastFuelTypeRequested, setLastFuelTypeRequested] = useState(null);
 
-  // State to hold all received vehicle data
-  const [vehicleData, setVehicleData] = useState({});
+  // Use Zustand for vehicle data (persist across steps)
+  const vehicleData = useAppStore((s) => s.vehicleData);
+  const setVehicleData = useAppStore((s) => s.setVehicleData);
+  const resetVehicleData = useAppStore((s) => s.resetVehicleData);
 
   // Ref for potential direct chart manipulation (future use)
   // const chartRef = useRef(null);
@@ -159,9 +161,15 @@ export default function EnergyConsumptionAndEmissionRates() {
       if (dataKey.endsWith("_Consumption")) {
         // Handle consumption data - array of speed/consumption pairs
         if (data.results && Array.isArray(data.results)) {
-          // Sort by speed to avoid straight lines between unsorted points
+          // Deduplicate by speed: keep only the first occurrence for each speed
+          const seenSpeeds = new Set();
           dataPoints = data.results
             .map((r) => ({ x: r.speed, y: r.consumption }))
+            .filter((point) => {
+              if (seenSpeeds.has(point.x)) return false;
+              seenSpeeds.add(point.x);
+              return true;
+            })
             .sort((a, b) => a.x - b.x);
           // Get consumption unit from the stored data
           if (data.unit) {
@@ -308,11 +316,14 @@ export default function EnergyConsumptionAndEmissionRates() {
     fuelType || consumptionYAxisLabel
   } (${consumptionUnit})`;
 
-  // If the currently selected emissionType is not allowed for the chosen fuel, clear it
+  // Only clear EmissionType if fuelType changes and the current emissionType is not valid for the new fuelType
+  const prevFuelTypeRef = useRef(fuelType);
   useEffect(() => {
-    if (!emissionType) return;
+    if (!emissionType) {
+      prevFuelTypeRef.current = fuelType;
+      return;
+    }
     const forbiddenForElectric = new Set(["CO2 Emissions", "NOx"]);
-    // derive allowed labels inside effect so it is stable with dependencies
     const allowedLabels = new Set(
       fuelType === "Electricity"
         ? EMISSION_TYPES.filter(
@@ -320,10 +331,14 @@ export default function EnergyConsumptionAndEmissionRates() {
           ).map((e) => e.label)
         : EMISSION_TYPES.map((e) => e.label)
     );
-    // Also always disallow 'Energy Rate' in the UI (user requested it removed)
-    if (emissionType === "Energy Rate" || !allowedLabels.has(emissionType)) {
+    // Only clear if fuelType actually changed and emissionType is not allowed
+    if (
+      prevFuelTypeRef.current !== fuelType &&
+      (emissionType === "Energy Rate" || !allowedLabels.has(emissionType))
+    ) {
       setConsumptionAndEmissionState({ EmissionType: "" });
     }
+    prevFuelTypeRef.current = fuelType;
   }, [fuelType, emissionType, setConsumptionAndEmissionState]);
 
   // Fix the city key selection logic with proper mapping
@@ -331,8 +346,8 @@ export default function EnergyConsumptionAndEmissionRates() {
   const selectedCityName = cityNameMapping[rawCityName] || rawCityName;
   const selectedCityKey = selectedCityName;
 
-  return (
-    <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
+    return (
+    <div className="flex flex-row items-stretch gap-6 pt-4" style={{ paddingLeft: '100px' }}>
       {/* Left: controls */}
       <div className="flex flex-col gap-6">
         <form
@@ -684,7 +699,7 @@ export default function EnergyConsumptionAndEmissionRates() {
         </form>
 
         {/* Two side-by-side charts as in your PDF */}
-        <div className="mt-8 flex flex-row gap-8 justify-start">
+        <div className="mt-8 flex flex-row gap-8 justify-center">
           {/* Charts */}
           <div style={{ display: "flex", flexDirection: "row", gap: "2rem" }}>
             <div
@@ -887,7 +902,7 @@ export default function EnergyConsumptionAndEmissionRates() {
       </div>
 
       {/* Right: map image only (stepper removed) */}
-      <div className="flex flex-col gap-6">
+      {/* <div className="flex flex-col gap-6">
         <div>
           {selectedCityKey && cityImages[selectedCityKey] && (
             <img
@@ -897,7 +912,7 @@ export default function EnergyConsumptionAndEmissionRates() {
             />
           )}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

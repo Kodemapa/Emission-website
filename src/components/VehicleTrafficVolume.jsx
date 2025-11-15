@@ -227,9 +227,10 @@ function VehicleTrafficVolume() {
     trafficState.trafficMFTParametersData.length > 0;
 
   return (
-    <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
-      <div className="flex flex-col gap-6">
-        <form className="flex items-end gap-4 p-4 rounded">
+    <div className="flex flex-row items-stretch gap-6 pt-4 justify-center w-full max-w-full">
+      <div className="flex-1 flex flex-col items-center">
+        <div className="w-full max-w-4xl mx-auto flex flex-col gap-6 justify-end items-end">
+          <form className="flex flex-row flex-nowrap items-end gap-2 p-2 rounded w-full min-w-0 mr-16">
           <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 min-w-[160px] whitespace-nowrap justify-center">
             <span className="mr-2 whitespace-nowrap">Traffic Volume</span>
             <CloudUpload className="ml-2 w-5 h-5" />
@@ -268,7 +269,7 @@ function VehicleTrafficVolume() {
             <select
               value={classificationState.cityInput}
               disabled
-              className="bg-gray-200 text-gray-600 rounded px-2 h-10 w-32 border border-gray-300 font-semibold text-base"
+              className="bg-gray-200 text-gray-600 rounded px-2 h-10 min-w-[90px] max-w-[120px] border border-gray-300 font-semibold text-base"
             >
               <option value="">City</option>
               {statesList.slice(1).map((st) => (
@@ -280,7 +281,7 @@ function VehicleTrafficVolume() {
           </div>
           <button
             type="button"
-            className="px-6 py-2 bg-blue-500 text-white rounded font-semibold h-10 min-w-[160px] whitespace-nowrap hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 bg-blue-500 text-white rounded font-semibold h-10 min-w-[100px] max-w-[140px] whitespace-nowrap hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={async () => {
               setTrafficState({ showResults: true, speedEstimated: true });
               // Fetch traffic plot image from backend
@@ -304,7 +305,8 @@ function VehicleTrafficVolume() {
           >
             Estimate Speed
           </button>
-        </form>
+          </form>
+        </div>
 
         {/* Show data/results only after Estimate Speed is clicked AND speedEstimated flag is set */}
   {showResults && trafficState.speedEstimated && trafficPlotImg && (
@@ -319,28 +321,30 @@ function VehicleTrafficVolume() {
               <img
                 src={TrafficLegend}
                 alt="Traffic Legend"
-                className="max-w-[350px] object-contain rounded mt-4"
+                className="max-w-[600px] w-full object-contain rounded mt-4"
                 style={{ display: 'block' }}
               />
             </div>
             {/* Show MFD Parameters Table only */}
             {hasMFTParametersData && (
-              <div style={{margin:0,padding:0}}>
+              <div style={{margin:0,padding:0, textAlign:'center'}}>
                 <div className="bg-[#f7f7f9] text-[#222222] text-center box-border font-semibold border border-solid border-[#cccccc] rounded-none" style={{borderRadius:0}}>
                   <span>Macroscopic Traffic Model Parameters</span>
                 </div>
-                <TractParametersTable trafficState={trafficState} />
+                <div style={{display:'inline-block', width:'100%'}}>
+                  <TractParametersTable trafficState={trafficState} alignCenter />
+                </div>
               </div>
             )}
           </>
         )}
       </div>
       <div className="flex flex-col gap-6">
-        {classificationState.city && (
+        {classificationState.city && cityImages[classificationState.city] && (
           <img
             src={cityImages[classificationState.city]}
             alt={classificationState.city}
-            className="w-full h-[500px] object-contain rounded"
+            className="w-full max-h-[300px] md:max-h-[500px] object-contain rounded"
           />
         )}
       </div>

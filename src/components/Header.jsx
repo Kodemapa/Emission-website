@@ -35,7 +35,7 @@ const Header = () => {
 
       <div className="flex flex-col items-center gap-4">
         <h1
-          className="text-xl font-bold transition-colors duration-300"
+          className="text-3xl font-bold transition-colors duration-300"
           style={{ color: '#1A237E' }}
         >
           Atlanta Energy and Emission Modeling and Analysis Tool
@@ -54,7 +54,7 @@ const Header = () => {
         >
           Sign In
         </Link> */}
-        <div className="flex items-center ml-2">
+        {/* <div className="flex items-center ml-2">
           <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -71,7 +71,7 @@ const Header = () => {
           >
             {theme === "dark" ? "Dark mode" : "Light mode"}
           </span>
-        </div>
+        </div> */}
       </div>
     </header>
   );

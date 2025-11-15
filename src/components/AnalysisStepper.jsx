@@ -63,14 +63,14 @@ function AnalysisStepper({ finalNext, activeStep, setActiveStep }) {
         <div className="w-full max-w-3xl mx-auto flex flex-row items-center gap-6 mt-2">
           <button
             onClick={handleBack}
-            className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors -ml-24"
+            className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors -ml-50"
           >
             Back
           </button>
           <div className="flex flex-row items-center gap-2 w-full relative" style={{ minHeight: '56px' }}>
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50 absolute"
-              style={{ minWidth: '90px', right: '-300px' }}
+              style={{ minWidth: '90px', right: '-400px' }}
               onClick={handleNext}
               disabled={activeStep === 1}
             >
@@ -83,7 +83,7 @@ function AnalysisStepper({ finalNext, activeStep, setActiveStep }) {
           <button
             onClick={handleBack}
             className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
-            style={{ marginLeft: '150px' }}
+            style={{ marginLeft: '28px' }}
           >
             Back
           </button>

@@ -11,48 +11,42 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
   const headers: string[] = trafficState.trafficMFTParametersHeaders ?? [];
   const rawData = trafficState.trafficMFTParametersData ?? [];
 
-  // Build columns from headers
-  // Add serial number column before Tract ID
+  // Build columns from headers, add S.No column with no header
   const columns: GridColDef[] = useMemo(() => {
+    const snoCol: GridColDef = {
+      field: 'sno',
+      headerName: '',
+      width: 60,
+      sortable: false,
+      align: 'center',
+      headerAlign: 'center',
+      cellClassName: 'sno-cell',
+    };
     const baseColumns = headers.map((h) => ({
       field: String(h),
       headerName: String(h),
       flex: 1,
       minWidth: 120,
       sortable: false,
+      headerClassName: 'custom-header',
+      align: 'center',
+      headerAlign: 'center',
     }));
-    // Only add S.No if trafficState.trafficMFTParametersHeaders exists (VehicleTrafficVolume page)
-    if (headers.length && headers[0] === 'Tract ID') {
-      return [
-        {
-          field: 'sno',
-          headerName: 'S.No',
-          width: 70,
-          sortable: false,
-          align: 'center',
-          headerAlign: 'center',
-        },
-        ...baseColumns,
-      ];
-    }
-    return baseColumns;
+    return [snoCol, ...baseColumns];
   }, [headers]);
 
-  // Normalize rows (AoA from Handsontable OR AoO)
+  // Normalize rows (AoA from Handsontable OR AoO), add S.No
   const allRows: AnyRow[] = useMemo(() => {
     if (!rawData?.length) return [];
     if (Array.isArray(rawData[0])) {
       return (rawData as any[][]).map((arr, idx) => {
-        const r: AnyRow = { id: idx + 1 };
-        if (headers.length && headers[0] === 'Tract ID') r['sno'] = idx + 1;
+        const r: AnyRow = { id: idx + 1, sno: idx + 1 };
         headers.forEach((h, i) => (r[String(h)] = arr[i] ?? null));
         return r;
       });
     }
     return (rawData as AnyRow[]).map((r, idx) => {
-      const rowObj = { id: r.id ?? idx + 1, ...r };
-      if (headers.length && headers[0] === 'Tract ID') rowObj['sno'] = idx + 1;
-      return rowObj;
+      return { id: r.id ?? idx + 1, sno: idx + 1, ...r };
     });
   }, [rawData, headers]);
 
@@ -114,12 +108,19 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
       sx={{
         border: '1px solid #ccc',
         borderRadius: 1,
+        textAlign: 'center',
         "& .MuiDataGrid-columnHeaders": {
-          backgroundColor: theme === "dark" ? "#0a2f5c" : "#f5f7fb",
+          backgroundColor: '#f3f4f6',
           borderBottom: '1px solid #ccc',
         },
         "& .MuiDataGrid-columnHeader": {
           borderRight: '1px solid #ccc',
+          color: '#121315ff',
+          fontWeight: 'bold !important',
+          fontFamily: 'Segoe UI Bold, Segoe UI, Arial, sans-serif !important',
+          textTransform: 'none',
+          backgroundColor: '#f3f4f6',
+          textAlign: 'center',
         },
         "& .MuiDataGrid-columnHeader:last-child": {
           borderRight: 'none',
@@ -128,6 +129,12 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
           color: theme === "dark" ? "#e5e7eb" : undefined,
           borderRight: '1px solid #eee',
           borderBottom: '1px solid #eee',
+          textAlign: 'center',
+        },
+        "& .sno-cell": {
+          color: '#6b7280',
+          backgroundColor: '#f3f4f6',
+          fontWeight: 500,
         },
         "& .MuiDataGrid-row:last-child .MuiDataGrid-cell": {
           borderBottom: 'none',
@@ -136,7 +143,7 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
           borderRight: 'none',
         },
         "& .MuiDataGrid-row:hover": {
-          backgroundColor: theme === "dark" ? "#0f2444" : undefined,
+          backgroundColor: 'inherit',
         },
       }}
     />

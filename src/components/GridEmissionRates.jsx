@@ -153,9 +153,17 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
 
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
+      {/* Logo image on the left */}
+      <div className="flex flex-col justify-start items-start pt-2 pr-2">
+        <img
+          src="src/assets/Logo2.jpg"
+          alt="NREL Cambium"
+          style={{ width: "160px", height: "auto" }}
+        />
+      </div>
       {/* Left panel: form + table */}
       <div className="flex flex-col gap-6">
-        <Card variant="outlined" sx={{ backgroundColor: "#fafafa", mb: 4 }}>
+        <Card variant="outlined" sx={{ backgroundColor: "#fafafa", mb: 4, maxWidth: 1200, px: 2, py: 1 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
               Scenarios
@@ -223,7 +231,7 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
           </div>
         </form>
         
-        <div className="flex flex-row items-start gap-8 mt-2">
+        <div className="flex flex-row items-start gap-8 w-full">
           <div className="flex-1">
             {classificationState.cityInput && GridEmissionState.EmissionType ? (
               <AnalysisImage
@@ -237,8 +245,8 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
           <img
             src={gridDataImg}
             alt="Grid Data"
-            className="h-[320px] object-contain rounded border border-gray-100 "
-            style={{ maxWidth: '99%' }}
+            className="h-[320px] object-contain rounded border border-gray-100"
+            style={{ maxWidth: '99%', marginTop: '-56px', minHeight: '320px' }}
           />
         </div>
 
@@ -247,19 +255,10 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
       <div className="flex flex-col gap-6">
         <div className="ml-4 flex items-center gap-4">
           <VehicleStepper activeStep={isResults ? 1 : (typeof activeStep === 'number' ? activeStep : 0)}  />
-          <img
-            src="src/assets/Logo2.jpg"
-            alt="NREL Cambium"
-            style={{ width: "120px", height: "auto" }}
-          />
         </div>
         {classificationState.city && cityImages[classificationState.city] && (
            <div className="flex flex-row gap-6 items-start">
-             <img
-               src={cityImages[classificationState.city]}
-              alt={classificationState.city}
-               className="h-[100px] object-contain rounded"
-               style={{ maxWidth: '150px' }}  />
+             
            
  </div>
 //           <div className="flex flex-row gap-6 items-start">

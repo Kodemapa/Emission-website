@@ -88,7 +88,7 @@ export default function ArrowStepper() {
       style={{ minHeight: "calc(100vh - 185px)" }}
     >
       <style>{`
-        .arrow-stepper { --arrow: 20px; --border-width: 4px; }
+        .arrow-stepper { --arrow: 10px; --border-width: 4px; }
         .clip-path-first {
           clip-path: polygon(
             0 0,
@@ -227,7 +227,7 @@ export default function ArrowStepper() {
         {/* Arrow stepper */}
         <div className="flex items-center gap-4">
           {steps.map((step, index) => (
-            <div key={step} className={getStepStyle(index) + " min-w-[180px]"}>
+            <div key={step} className={getStepStyle(index) + " min-w-[210px]"}>
               <span>{step}</span>
             </div>
           ))}
@@ -243,7 +243,7 @@ export default function ArrowStepper() {
         </div>
         {/* Vertical stepper: only show after Start is clicked */}
         {activeStep !== -1 && (
-          <div>
+          <div style={{ marginLeft: '-30px' }}>
             {(() => {
               let stepperActiveStep = 0;
               let stepperSteps = inputSteps;
@@ -320,7 +320,7 @@ export default function ArrowStepper() {
         
         {/* Navigation Buttons: Back button at the bottom */}
         {activeStep === 2 && (
-          <div className="flex justify-center gap-4 w-full pb-4">
+          <div className="flex justify-start gap-4 w-full pb-4 ml-25">
             <button
               onClick={handleBack}
               className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"

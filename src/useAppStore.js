@@ -9,6 +9,18 @@ import { create } from "zustand";
  * - Keeps "latest payload/response" for quick debugging
  */
 const useAppStore = create((set, get) => ({
+    // ------------------------------
+    // Vehicle Data for Graphs (persisted across steps)
+    // ------------------------------
+    vehicleData: {},
+    setVehicleData: (dataOrUpdater) =>
+      set((state) => ({
+        vehicleData:
+          typeof dataOrUpdater === "function"
+            ? dataOrUpdater(state.vehicleData)
+            : dataOrUpdater,
+      })),
+    resetVehicleData: () => set({ vehicleData: {} }),
   // ------------------------------
   // Notification slice
   // ------------------------------

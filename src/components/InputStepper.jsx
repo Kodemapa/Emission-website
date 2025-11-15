@@ -254,7 +254,7 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="w-full max-w-7xl mx-auto flex flex-row items-center mt-2" style={{ justifyContent: 'space-between' }}>
+      <div className="w-full max-w-7xl mx-auto flex flex-row items-center mt-2 justify-between">
         <button
           className={`${activeStep === 0 ? 'bg-gray-500' : 'bg-blue-500'} text-white px-4 py-2 rounded disabled:opacity-50`}
           onClick={handleBack}
@@ -263,8 +263,7 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
         >
           Back
         </button>
-        <div style={{ flex: 1 }} />
-        <div>
+        <div className="flex flex-row gap-4">
           {activeStep < steps.length - 1 && (
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -276,7 +275,7 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
           )}
           {activeStep === steps.length - 1 && (
             <button
-              className="bg-green-600 text-white px-4 py-2 rounded"
+              className="bg-green-600 text-white px-4 py-2 rounded -ml-2"
               onClick={async () => {
                 // First save the projected demand data to database
                 const store = useAppStore.getState();
@@ -314,7 +313,7 @@ function InputStepper({ finalNext, activeStep, setActiveStep }) {
                     });
                     formData.append("file_table", JSON.stringify(tableData));
                   }
-
+  
                   try {
                     const res = await fetch("http://localhost:5003/upload/projected_traffic", {
                       method: "POST",

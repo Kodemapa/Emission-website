@@ -320,28 +320,34 @@ function ProjectedDemand() {
               <img
                 src={TrafficLegend}
                 alt="Traffic Volume Legend"
-                className="h-12 object-contain"
-                style={{ maxWidth: 400 }}
+                className="h-20 object-contain"
+                style={{ maxWidth: 600 }}
               />
             </div>
           </>
         ) : null}
         {showTable && projectedDemandState.speedEstimated && projectedDemandState.projectedTrafficVolumeData?.length > 0 ? (
-          <div>
-            <div className="bg-[#f7f7f9] text-[#222222] text-center box-border rounded font-semibold border border-solid border-[#cccccc]">
+          <div className="bg-[#f7f7f9] text-[#222222]" style={{ width: '1000px', margin: '0 auto' }}>
+            <div style={{
+              width: '1000px',
+              background: '#f7f7f9',
+              border: '1px solid #cccccc',
+              borderBottom: 'none',
+              textAlign: 'center',
+              fontSize: '1.15rem',
+              color: '#222',
+            }}>
               <span>Projected Increase In Traffic Volumes</span>
             </div>
             <HotTable
-              className="min-w-[60%] overflow-auto"
-              style={{ minHeight: 500 }}
+              className="overflow-auto"
+              style={{ width: '1000px', minHeight: 500, borderRadius: 0 }}
               data={projectedDemandState.projectedTrafficVolumeData}
               colHeaders={projectedDemandState.projectedTrafficVolumeHeaders}
               rowHeaders
               stretchH="all"
               licenseKey="non-commercial-and-evaluation"
-              themeName={
-                theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
-              }
+              themeName={theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"}
               pagination={false}
               renderPagination={false}
               afterGetColHeader={(col, TH) => {
