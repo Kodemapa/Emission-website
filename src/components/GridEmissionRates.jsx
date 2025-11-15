@@ -195,7 +195,7 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
                   EmissionType: e.target.value,
                 })
               }
-              className="border rounded px-2 py-1 w-56"
+              className="border rounded px-2 py-1 w-65"
             >
               <option value="">Select Grid Emission Type</option>
               <option value="CO2">CO₂</option>

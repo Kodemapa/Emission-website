@@ -225,7 +225,10 @@ export default function ArrowStepper() {
       {/* Top row: arrow stepper and vertical stepper side by side */}
       <div className={`flex flex-row items-start gap-16 w-full justify-center ${activeStep !== -1 ? 'pl-56' : 'pl-8'}`}>
         {/* Arrow stepper */}
-        <div className="flex items-center gap-4">
+        <div
+          className="flex items-center gap-4"
+          style={activeStep === 1 ? { marginLeft: '48px' } : {}}
+        >
           {steps.map((step, index) => (
             <div key={step} className={getStepStyle(index) + " min-w-[210px]"}>
               <span>{step}</span>

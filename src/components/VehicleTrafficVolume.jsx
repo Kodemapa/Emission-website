@@ -230,7 +230,7 @@ function VehicleTrafficVolume() {
     <div className="flex flex-row items-stretch gap-6 pt-4 justify-center w-full max-w-full">
       <div className="flex-1 flex flex-col items-center">
         <div className="w-full max-w-4xl mx-auto flex flex-col gap-6 justify-end items-end">
-          <form className="flex flex-row flex-nowrap items-end gap-2 p-2 rounded w-full min-w-0 mr-16">
+          <form className="flex flex-row flex-nowrap items-end gap-2 p-2 rounded w-full min-w-0 mr-16 ml-auto">
           <label className="flex items-center bg-blue-400 text-white font-semibold px-4 rounded cursor-pointer h-10 min-w-[160px] whitespace-nowrap justify-center">
             <span className="mr-2 whitespace-nowrap">Traffic Volume</span>
             <CloudUpload className="ml-2 w-5 h-5" />
@@ -281,7 +281,8 @@ function VehicleTrafficVolume() {
           </div>
           <button
             type="button"
-            className="px-3 py-2 bg-blue-500 text-white rounded font-semibold h-10 min-w-[100px] max-w-[140px] whitespace-nowrap hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold text-base px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ minWidth: 100, maxWidth: 140, height: 40, whiteSpace: 'nowrap' }}
             onClick={async () => {
               setTrafficState({ showResults: true, speedEstimated: true });
               // Fetch traffic plot image from backend
@@ -327,7 +328,7 @@ function VehicleTrafficVolume() {
             </div>
             {/* Show MFD Parameters Table only */}
             {hasMFTParametersData && (
-              <div style={{margin:0,padding:0, textAlign:'center'}}>
+              <div style={{margin:0,padding:0, textAlign:'center', marginTop:'32px'}}>
                 <div className="bg-[#f7f7f9] text-[#222222] text-center box-border font-semibold border border-solid border-[#cccccc] rounded-none" style={{borderRadius:0}}>
                   <span>Macroscopic Traffic Model Parameters</span>
                 </div>
