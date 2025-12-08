@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { CloudUpload } from "lucide-react";
 import * as XLSX from "xlsx";
 import { registerAllModules } from "handsontable/registry";
@@ -18,8 +18,38 @@ import NewYorkTF from "../assets/TrafficVolumeNY.png";
 import TractParametersTable from "./TractParametersTable";
 import { toast } from "react-toastify";   
 import TrafficLegend from "../assets/TrafficLegend.jpg";
+
 registerAllModules();
 
+// --- Reusable Zoom Toolbar Component ---
+const ZoomToolbar = ({ onZoomIn, onZoomOut, onReset }) => (
+  <div className="absolute top-4 right-4 z-10 flex bg-white rounded border border-gray-300 shadow-sm overflow-hidden select-none">
+    <button
+      onClick={onZoomIn}
+      className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+      title="Zoom In"
+      type="button"
+    >
+      +
+    </button>
+    <button
+      onClick={onZoomOut}
+      className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+      title="Zoom Out"
+      type="button"
+    >
+      -
+    </button>
+    <button
+      onClick={onReset}
+      className="px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-gray-50 uppercase tracking-wide transition-colors"
+      title="Reset Zoom"
+      type="button"
+    >
+      RESET
+    </button>
+  </div>
+);
 
 function VehicleTrafficVolume() {
   const classificationState = useAppStore((s) => s.classificationState);
@@ -27,16 +57,29 @@ function VehicleTrafficVolume() {
   const setTrafficState = useAppStore((s) => s.setTrafficVolumeState);
   const addNotification = useAppStore.getState().addNotification;
 
+  // -- Zoom State --
+  const [imageZoom, setImageZoom] = useState(1);
+
   // Persist showResults and trafficPlotImg in global state
   const showResults = trafficState.showResults || false;
   const trafficPlotImg = trafficState.trafficPlotImg || null;
 
   // Restore showResults and trafficPlotImg on mount if data exists
-  React.useEffect(() => {
+  useEffect(() => {
     if (trafficState.speedEstimated && (trafficState.trafficVolumeData?.length > 0 || trafficState.trafficMFTParametersData?.length > 0)) {
       setTrafficState({ showResults: true });
     }
   }, [trafficState.speedEstimated, trafficState.trafficVolumeData, trafficState.trafficMFTParametersData, setTrafficState]);
+
+  // Reset zoom when city changes
+  useEffect(() => {
+    setImageZoom(1);
+  }, [classificationState.cityInput, classificationState.city]);
+
+  // -- Zoom Handlers --
+  const handleZoomIn = () => setImageZoom((prev) => Math.min(prev + 0.25, 3.5)); // Max zoom 3.5x
+  const handleZoomOut = () => setImageZoom((prev) => Math.max(prev - 0.25, 1)); // Min zoom 1x
+  const handleResetZoom = () => setImageZoom(1);
 
   // Submit data to backend - called by parent component during step navigation
   // eslint-disable-next-line no-unused-vars
@@ -55,9 +98,9 @@ function VehicleTrafficVolume() {
 
     // Check if both files are selected
     if (!trafficVolumeFile || !mftParametersFile) {
-  const msg = "Please select both Traffic Volume and MFT Parameters files";
-  addNotification(msg);
-  return;
+      const msg = "Please select both Traffic Volume and MFT Parameters files";
+      addNotification(msg);
+      return;
     }
 
     // Prepare FormData for backend
@@ -82,10 +125,10 @@ function VehicleTrafficVolume() {
       });
 
       if (!res.ok) {
-  const errorData = await res.json();
-  const msg = errorData.error || "Upload failed";
-  addNotification(msg);
-  throw new Error(msg);
+        const errorData = await res.json();
+        const msg = errorData.error || "Upload failed";
+        addNotification(msg);
+        throw new Error(msg);
       }
 
       const data = await res.json();
@@ -97,9 +140,9 @@ function VehicleTrafficVolume() {
         localStorage.setItem("transaction_id", data.transaction_id);
       }
     } catch (err) {
-  console.error("Upload error:", err);
-  const msg = "Upload failed: " + err.message;
-  addNotification(msg);
+      console.error("Upload error:", err);
+      const msg = "Upload failed: " + err.message;
+      addNotification(msg);
     }
   };
 
@@ -107,7 +150,7 @@ function VehicleTrafficVolume() {
   const cityImages = { 
     Atlanta, 
     "Los Angeles": LosAngeles, 
-    LosAngeles, // Add this line to support 'LosAngeles' as a key
+    LosAngeles, 
     Seattle, 
     NewYork 
   };
@@ -117,7 +160,6 @@ function VehicleTrafficVolume() {
     Seattle: SeattleTF,
     NewYork: NewYorkTF,
   };
-
 
   const loadSheet = (file, type) => {
     if (!file) return;
@@ -191,40 +233,26 @@ function VehicleTrafficVolume() {
         }
       }
 
-      // Print variable in console after upload
-      const city =
-        (classificationState.city ?? classificationState.cityInput) || "";
-      const trafficVolumeFile =
-        type === "trafficVolume" ? file : trafficState.trafficVolumeFile;
-      const mftParametersFile =
-        type === "mftParameters" ? file : trafficState.trafficMFTParametersFile;
+      const city = (classificationState.city ?? classificationState.cityInput) || "";
+      const trafficVolumeFile = type === "trafficVolume" ? file : trafficState.trafficVolumeFile;
+      const mftParametersFile = type === "mftParameters" ? file : trafficState.trafficMFTParametersFile;
       const values = {
         city,
         trafficVolumeFile: trafficVolumeFile ? trafficVolumeFile.name : null,
         mftParametersFile: mftParametersFile ? mftParametersFile.name : null,
       };
-      console.log(
-        "Traffic Volume and Speed upload values (after upload):",
-        values
-      );
+      console.log("Traffic Volume and Speed upload values (after upload):", values);
     };
 
-    file.name.endsWith(".csv")
-      ? reader.readAsText(file)
-      : reader.readAsBinaryString(file);
+    file.name.endsWith(".csv") ? reader.readAsText(file) : reader.readAsBinaryString(file);
   };
 
   const city = (classificationState.city ?? classificationState.cityInput) || "";
-  // Normalize city key for image lookup
   let key = city.trim();
   if (key.toLowerCase() === "los angeles") key = "Los Angeles";
-  const srcImg = trafficVolumeImages[key];
 
-  const hasTrafficVolumeData =
-    trafficState.trafficVolumeData && trafficState.trafficVolumeData.length > 0;
-  const hasMFTParametersData =
-    trafficState.trafficMFTParametersData &&
-    trafficState.trafficMFTParametersData.length > 0;
+  const hasTrafficVolumeData = trafficState.trafficVolumeData && trafficState.trafficVolumeData.length > 0;
+  const hasMFTParametersData = trafficState.trafficMFTParametersData && trafficState.trafficMFTParametersData.length > 0;
 
   return (
     <div className="flex flex-row items-stretch gap-6 pt-4 justify-center w-full max-w-full">
@@ -285,7 +313,6 @@ function VehicleTrafficVolume() {
             style={{ minWidth: 100, maxWidth: 140, height: 40, whiteSpace: 'nowrap' }}
             onClick={async () => {
               setTrafficState({ showResults: true, speedEstimated: true });
-              // Fetch traffic plot image from backend
               try {
                 const city = (classificationState.city ?? classificationState.cityInput) || "";
                 const year = classificationState.baseYear || "";
@@ -309,24 +336,46 @@ function VehicleTrafficVolume() {
           </form>
         </div>
 
-        {/* Show data/results only after Estimate Speed is clicked AND speedEstimated flag is set */}
-  {showResults && trafficState.speedEstimated && trafficPlotImg && (
-          <>
-            <img
-              src={trafficPlotImg}
-              alt="Traffic Plot"
-              className="w-full max-h-[350px] object-contain rounded"
-            />
-            {/* Traffic Legend Image: only show when trafficPlotImg is visible */}
+        {/* --- Results Section with Zoom --- */}
+        {showResults && trafficState.speedEstimated && trafficPlotImg && (
+          <div className="flex flex-col gap-2 w-full max-w-4xl mt-6">
+            
+            {/* 1. Zoomable Image Container */}
+            <div className="relative w-full h-[400px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group">
+              <div className="w-full h-full overflow-auto bg-gray-50">
+                <img
+                  src={trafficPlotImg}
+                  alt="Traffic Plot"
+                  className="transition-all duration-200 ease-out origin-top-left max-w-none"
+                  style={{ 
+                    // Width is controlled by zoom
+                    width: `${imageZoom * 100}%`,
+                    // Height auto preserves aspect ratio
+                    height: 'auto',
+                    minWidth: '100%',
+                    minHeight: '100%',
+                    objectFit: 'contain'
+                  }}
+                />
+              </div>
+              <ZoomToolbar 
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onReset={handleResetZoom}
+              />
+            </div>
+
+            {/* 2. Legend Image */}
             <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
               <img
                 src={TrafficLegend}
                 alt="Traffic Legend"
-                className="max-w-[600px] w-full object-contain rounded mt-4"
+                className="max-w-[600px] w-full object-contain rounded mt-2"
                 style={{ display: 'block' }}
               />
             </div>
-            {/* Show MFD Parameters Table only */}
+
+            {/* 3. MFD Parameters Table */}
             {hasMFTParametersData && (
               <div style={{margin:0,padding:0, textAlign:'center', marginTop:'32px'}}>
                 <div className="bg-[#f7f7f9] text-[#222222] text-center box-border font-semibold border border-solid border-[#cccccc] rounded-none" style={{borderRadius:0}}>
@@ -337,9 +386,11 @@ function VehicleTrafficVolume() {
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
+
+      {/* Right Column: City Map */}
       <div className="flex flex-col gap-6">
         {classificationState.city && cityImages[classificationState.city] && (
           <img

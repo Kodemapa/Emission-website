@@ -19,8 +19,40 @@ import TrafficLegend from "../assets/TrafficLegend.jpg";
 // Register Handsontable modules
 registerAllModules();
 
+// --- Reusable Zoom Toolbar Component ---
+const ZoomToolbar = ({ onZoomIn, onZoomOut, onReset }) => (
+  <div className="absolute top-4 right-4 z-10 flex bg-white rounded border border-gray-300 shadow-sm overflow-hidden select-none">
+    <button
+      onClick={onZoomIn}
+      className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+      title="Zoom In"
+      type="button"
+    >
+      +
+    </button>
+    <button
+      onClick={onZoomOut}
+      className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+      title="Zoom Out"
+      type="button"
+    >
+      -
+    </button>
+    <button
+      onClick={onReset}
+      className="px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-gray-50 uppercase tracking-wide transition-colors"
+      title="Reset Zoom"
+      type="button"
+    >
+      RESET
+    </button>
+  </div>
+);
+
 function ProjectedDemand() {
   const [showTable, setShowTable] = useState(false);
+  const [imageZoom, setImageZoom] = useState(1);
+  
   const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const penetrationState = useAppStore((s) => s.penetrationState);
@@ -29,15 +61,22 @@ function ProjectedDemand() {
   const setProjectedDemandState = useAppStore((s) => s.setProjectedDemandState);
   const trafficState = useAppStore((s) => s.trafficVolumeState);
 
-  // Auto-show table if speed was estimated before (e.g., when navigating back from next page)
+  // Auto-show table if speed was estimated before
   useEffect(() => {
-    // Only show results if the speedEstimated flag is set (meaning user clicked Estimate Speed before)
     if (projectedDemandState.speedEstimated) {
       setShowTable(true);
     }
   }, [projectedDemandState.speedEstimated]);
 
-  // --- Helper Functions Moved Inside Component ---
+  // Reset zoom when the image (year/city) changes
+  useEffect(() => {
+    setImageZoom(1);
+  }, [penetrationState.projectedYear, classificationState.city]);
+
+  // Zoom Handlers
+  const handleZoomIn = () => setImageZoom((prev) => Math.min(prev + 0.25, 3.5)); // Max zoom 3.5x
+  const handleZoomOut = () => setImageZoom((prev) => Math.max(prev - 0.25, 1)); // Min zoom 1x
+  const handleResetZoom = () => setImageZoom(1);
 
   // Helper to convert table data to CSV string
   function arrayToCSV(headers, rows) {
@@ -49,76 +88,9 @@ function ProjectedDemand() {
     return csvRows.join("\n");
   }
 
-  // Submit data to backend - called by parent component during step navigation
-  // eslint-disable-next-line no-unused-vars
-  const handleNext = async () => {
-    // Collect values using mapped city name
-    const city =
-      cityNameMapping[classificationState.city] ||
-      classificationState.cityInput ||
-      "";
-    // Prefer penetrationState.projectedYear, fallback to classificationState.baseYear
-    let year =
-      penetrationState.projectedYear || classificationState.baseYear || "";
-    const file = projectedDemandState.projectedTrafficVolumeFile || null;
-    const headers = projectedDemandState.projectedTrafficVolumeHeaders || [];
-    const data = projectedDemandState.projectedTrafficVolumeData || [];
-    // Convert table to CSV string
-    const csvString =
-      headers.length && data.length ? arrayToCSV(headers, data) : "";
-    // Store all in a variable
-    const values = {
-      city,
-      year,
-      file,
-      csv: csvString,
-    };
-    // Print in console
-    console.log("Projected Demand upload values:", {
-      ...values,
-      file: file ? file.name : null,
-    });
-
-    // Prepare FormData for backend
-    const formData = new FormData();
-    formData.append("city_name", city);
-    formData.append("base_year", classificationState.baseYear || "");
-    formData.append("vehicle_type", classificationState.vehicleType || "");
-    formData.append("projected_year", year);
-
-    // Add transaction_id from localStorage or default
-    const storedTransactionId =
-      localStorage.getItem("transaction_id") || "emission-analysis-2025";
-    formData.append("transaction_id", storedTransactionId);
-
-    if (file) formData.append("file_csv", file);
-    if (csvString) formData.append("file_table", csvString);
-
-    try {
-      const res = await fetch("http://localhost:5003/upload/projected_traffic", {
-        method: "POST",
-        body: formData,
-      });
-      if (!res.ok) throw new Error("Upload failed");
-      const respData = await res.json();
-      console.log("Backend response:", respData);
-      toast.success("Data uploaded successfully!");
-      
-      // Store transaction_id for later use
-      if (respData.transaction_id) {
-        localStorage.setItem("transaction_id", respData.transaction_id);
-      }
-    } catch (err) {
-      console.error("Upload error:", err);
-      toast.error("Upload failed: " + err.message);
-    }
-  };
-
-  // --- File and Image Logic ---
-
+  // File Upload Logic
   const loadSheet = (file, keyHeaders, keyData) => {
     if (!file) return;
-    
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = e.target.result;
@@ -134,26 +106,6 @@ function ProjectedDemand() {
           [keyData]: parsed.slice(1),
           projectedTrafficVolumeFile: file,
         });
-        
-        // Print variable in console after upload using mapped city name
-        const city =
-          cityNameMapping[classificationState.city] ||
-          classificationState.cityInput ||
-          "";
-        // Prefer penetrationState.projectedYear, fallback to classificationState.baseYear
-        let year =
-          penetrationState.projectedYear || classificationState.baseYear || "";
-        const csvString = arrayToCSV(parsed[0], parsed.slice(1));
-        const values = {
-          city,
-          year,
-          file,
-          csv: csvString,
-        };
-        console.log("Projected Demand upload values (after upload):", {
-          ...values,
-          file: file ? file.name : null,
-        });
       } else {
         setProjectedDemandState({ 
           [keyHeaders]: [], 
@@ -162,67 +114,41 @@ function ProjectedDemand() {
         });
       }
     };
-    
-    file.name.endsWith(".csv")
-      ? reader.readAsText(file)
-      : reader.readAsBinaryString(file);
+    file.name.endsWith(".csv") ? reader.readAsText(file) : reader.readAsBinaryString(file);
   };
 
-  // Helper to map city to image file base name
   const cityToFile = {
-    Atlanta: "GA",
-    "Los Angeles": "CA",
-    Seattle: "WA",
-    NewYork: "NY",
-    "New York": "Newyork",
-    "LosAngeles": "California",
-    Georgia: "Georgia",
-    California: "California",
-    Washington: "Washington",
+    Atlanta: "GA", "Los Angeles": "CA", Seattle: "WA", NewYork: "NY",
+    "New York": "Newyork", "LosAngeles": "California", Georgia: "Georgia",
+    California: "California", Washington: "Washington",
   };
 
   const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "NewYork"];
   
-  // These images must be in src/assets/
   const cityImages = {
-    Atlanta: Atlanta,
-    "Los Angeles": LosAngeles,
-    Seattle: Seattle,
-    NewYork: NewYork,
+    Atlanta: Atlanta, "Los Angeles": LosAngeles, Seattle: Seattle, NewYork: NewYork,
   };
 
-  // City name mapping to handle space differences
   const cityNameMapping = {
-    LosAngeles: "Los Angeles",
-    "Los Angeles": "Los Angeles",
-    "los angeles": "Los Angeles",
-    "losangeles": "Los Angeles",
-    NewYork: "NewYork",
-    "New York": "NewYork",
-    "new york": "NewYork",
-    "newyork": "NewYork",
-    Atlanta: "Atlanta",
-    "atlanta": "Atlanta",
-    Seattle: "Seattle",
-    "seattle": "Seattle",
+    LosAngeles: "Los Angeles", "Los Angeles": "Los Angeles", "los angeles": "Los Angeles", "losangeles": "Los Angeles",
+    NewYork: "NewYork", "New York": "NewYork", "new york": "NewYork", "newyork": "NewYork",
+    Atlanta: "Atlanta", "atlanta": "Atlanta",
+    Seattle: "Seattle", "seattle": "Seattle",
   };
 
   const rawCityName = (classificationState.city || classificationState.cityInput || "").trim();
-  // Normalize city name for mapping
   const mappedCity = cityNameMapping[rawCityName] || rawCityName;
   const year = penetrationState.projectedYear || classificationState.baseYear || "";
   let projectedImg = null;
   if (mappedCity && year) {
-    // Always use cityToFile mapping for the filename
     const fileCity = cityToFile[mappedCity] || mappedCity;
-    
-    // This path is now correct because /projected-demand-images is in your public folder
     const imgFile = `/projected-demand-images/${fileCity}_${year}.png`;
-    
-    console.log('[ProjectedDemand] mappedCity:', mappedCity, 'fileCity:', fileCity, 'year:', year, 'imgFile:', imgFile);
     projectedImg = imgFile;
   }
   
+  // Construct Title for the Card
+  const cardTitle = year ? `Year ${year}` : "Projected Demand";
+
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       <div className="flex flex-col gap-6">
@@ -234,11 +160,7 @@ function ProjectedDemand() {
               type="file"
               accept=".xlsx,.xls,.csv"
               onChange={(e) =>
-                loadSheet(
-                  e.target.files[0],
-                  "projectedTrafficVolumeHeaders",
-                  "projectedTrafficVolumeData"
-                )
+                loadSheet(e.target.files[0], "projectedTrafficVolumeHeaders", "projectedTrafficVolumeData")
               }
               className="hidden"
             />
@@ -259,7 +181,6 @@ function ProjectedDemand() {
               value={penetrationState.projectedYear || ""}
               onChange={e => {
                 setPenetrationState({ projectedYear: e.target.value });
-                // Reset showTable and speedEstimated when year changes
                 setShowTable(false);
                 setProjectedDemandState({ speedEstimated: false });
               }}
@@ -273,7 +194,6 @@ function ProjectedDemand() {
                   ))}
             </select>
           </div>
-
 
           <div className="flex flex-col gap-1 w-full">
             <label className="text-xs font-medium text-gray-600">City</label>
@@ -298,7 +218,6 @@ function ProjectedDemand() {
                 disabled={!penetrationState.projectedYear || !projectedDemandState.projectedTrafficVolumeData?.length}
                 onClick={() => {
                   setShowTable(true);
-                  // Mark that speed has been estimated
                   setProjectedDemandState({ speedEstimated: true });
                 }}
               >
@@ -307,15 +226,42 @@ function ProjectedDemand() {
             </div>
           </div>
         </form>
-        {/* Show data/results only after Estimate Speed is clicked AND speedEstimated flag is set */}
+
+        {/* --- Image Display with 950px Width --- */}
         {showTable && projectedDemandState.speedEstimated && projectedImg && (mappedCity && year) ? (
-          <>
-            <img
-              src={projectedImg}
-              alt={`${mappedCity} ${year} Projected Demand`}
-              className="w-full max-h-[350px] object-contain rounded"
-            />
-            {/* This legend image must be in src/assets/TrafficLegend.jpg */}
+          <div className="flex flex-col gap-2 max-w-[950px]">
+            {/* Image Container Card */}
+            <div className="relative w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group">
+              
+              {/* Title Section Inside Card */}
+              <div className="pt-4 pb-2 text-center">
+              </div>
+
+              {/* Scrollable Area */}
+              <div className="w-full h-[400px] overflow-auto bg-gray-50">
+                <img
+                  src={projectedImg}
+                  alt={`${mappedCity} ${year} Projected Demand`}
+                  className="transition-all duration-200 ease-out origin-top-left max-w-none mx-auto"
+                  style={{ 
+                    width: `${imageZoom * 100}%`,
+                    height: 'auto',
+                    // Removed minWidth/minHeight to allow natural image size to center if small, 
+                    // or scroll if zoomed.
+                    objectFit: 'contain'
+                  }}
+                />
+              </div>
+
+              {/* Zoom Controls Positioned Top-Right of Card */}
+              <ZoomToolbar 
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onReset={handleResetZoom}
+              />
+            </div>
+
+            {/* Legend Image */}
             <div className="flex justify-center mt-2">
               <img
                 src={TrafficLegend}
@@ -324,12 +270,14 @@ function ProjectedDemand() {
                 style={{ maxWidth: 600 }}
               />
             </div>
-          </>
+          </div>
         ) : null}
+
+        {/* --- Table with Width 950px --- */}
         {showTable && projectedDemandState.speedEstimated && projectedDemandState.projectedTrafficVolumeData?.length > 0 ? (
-          <div className="bg-[#f7f7f9] text-[#222222]" style={{ width: '1000px', margin: '0 auto', overflowX: 'auto', overflowY: 'hidden' }}>
+          <div className="bg-[#f7f7f9] text-[#222222]" style={{ width: '950px', margin: '0 auto', overflowX: 'auto', overflowY: 'hidden' }}>
             <div style={{
-              width: '1000px',
+              width: '950px',
               background: '#f7f7f9',
               border: '1px solid #cccccc',
               borderBottom: 'none',
@@ -339,10 +287,10 @@ function ProjectedDemand() {
             }}>
               <span>Projected Increase In Traffic Volumes</span>
             </div>
-            <div style={{ width: '1000px', overflowX: 'auto', overflowY: 'hidden' }}>
+            <div style={{ width: '950px', overflowX: 'auto', overflowY: 'hidden' }}>
               <HotTable
                 className="overflow-auto"
-                style={{ width: '1000px', minHeight: 500, borderRadius: 0 }}
+                style={{ width: '950px', minHeight: 500, borderRadius: 0 }}
                 data={projectedDemandState.projectedTrafficVolumeData}
                 colHeaders={projectedDemandState.projectedTrafficVolumeHeaders}
                 rowHeaders
@@ -364,9 +312,15 @@ function ProjectedDemand() {
             No data available
           </div>
         ) : null}
-        <TractParametersTable trafficState={trafficState} />
+        
+        {/* Tract Table with Width 950px */}
+        <div className="max-w-[950px]">
+           <TractParametersTable trafficState={trafficState} />
+        </div>
       </div>
-      <div className="flex flex-col gap-6">
+
+      {/* Right Column: City Map */}
+      <div className="flex flex-col gap-6 min-w-[400px]">
         {mappedCity && (
           <img
             src={cityImages[mappedCity]}

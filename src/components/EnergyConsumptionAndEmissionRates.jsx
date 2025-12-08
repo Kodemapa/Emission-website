@@ -19,6 +19,7 @@ import {
   Legend,
 } from "chart.js";
 import annotationPlugin from 'chartjs-plugin-annotation';
+import zoomPlugin from 'chartjs-plugin-zoom';
 
 ChartJS.register(
   CategoryScale,
@@ -28,7 +29,37 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  annotationPlugin
+  annotationPlugin,
+  zoomPlugin
+);
+// --- Reusable Zoom Toolbar Component ---
+const ZoomToolbar = ({ onZoomIn, onZoomOut, onReset }) => (
+  <div className="absolute top-4 right-4 z-10 flex bg-white rounded border border-gray-300 shadow-sm overflow-hidden select-none">
+    <button
+      onClick={onZoomIn}
+      className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+      title="Zoom In"
+      type="button"
+    >
+      +
+    </button>
+    <button
+      onClick={onZoomOut}
+      className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+      title="Zoom Out"
+      type="button"
+    >
+      -
+    </button>
+    <button
+      onClick={onReset}
+      className="px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-gray-50 uppercase tracking-wide transition-colors"
+      title="Reset Zoom"
+      type="button"
+    >
+      RESET
+    </button>
+  </div>
 );
 
 const VEHICLE_TYPES = [
@@ -84,6 +115,20 @@ function getRandomColor(idx) {
 }
 
 export default function EnergyConsumptionAndEmissionRates() {
+  // Chart refs for zoom controls
+  const consumptionChartRef = useRef(null);
+  const emissionChartRef = useRef(null);
+
+  // Zoom Handlers
+  const handleZoomIn = (chartRef) => {
+    if (chartRef.current) chartRef.current.zoom(1.1);
+  };
+  const handleZoomOut = (chartRef) => {
+    if (chartRef.current) chartRef.current.zoom(0.9);
+  };
+  const handleResetZoom = (chartRef) => {
+    if (chartRef.current) chartRef.current.resetZoom();
+  };
   // Store slices
   const addNotification = useAppStore((s) => s.addNotification);
   const classificationState = useAppStore((s) => s.classificationState);
@@ -702,18 +747,9 @@ export default function EnergyConsumptionAndEmissionRates() {
         <div className="mt-8 flex flex-row gap-8 justify-center">
           {/* Charts */}
           <div style={{ display: "flex", flexDirection: "row", gap: "2rem" }}>
-            <div
-              style={{
-                width: 420,
-                height: 320,
-                padding: 12,
-                border: "1px solid rgba(0,0,0,0.45)",
-                borderRadius: 8,
-                background: "rgba(255,255,255,0.88)",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-              }}
-            >
+            <div style={{ width: 420, height: 320, padding: 12, border: "1px solid rgba(0,0,0,0.45)", borderRadius: 8, background: "rgba(255,255,255,0.88)", boxShadow: "0 4px 12px rgba(0,0,0,0.12)", position: 'relative' }}>
               <Line
+                ref={consumptionChartRef}
                 key={`consumption-${updateCounter}`}
                 data={consumptionChartData}
                 options={{
@@ -723,68 +759,43 @@ export default function EnergyConsumptionAndEmissionRates() {
                     legend: { display: false },
                     tooltip: {
                       enabled: true,
-                      backgroundColor: '#fff', // White background
+                      backgroundColor: '#fff',
                       titleColor: '#222',
                       bodyColor: '#222',
                       borderColor: '#ccc',
                       borderWidth: 1,
                       callbacks: {
-                        title: (items) => {
-                          // Show vehicle type only
-                          return items[0]?.dataset?.label || '';
-                        },
-                        label: (item) => {
-                          // Show Speed and Y value with axis label
-                          const speed = item.parsed.x;
-                          const value = item.parsed.y;
-                          return [
-                            `Speed: ${speed}`,
-                            `${consumptionYAxisText}: ${value}`
-                          ];
-                        },
-                        labelColor: (item) => {
-                          // Use the dataset's borderColor for the box
-                          return {
-                            borderColor: item.dataset.borderColor,
-                            backgroundColor: item.dataset.borderColor,
-                          };
-                        },
+                        title: (items) => items[0]?.dataset?.label || '',
+                        label: (item) => [
+                          `Speed: ${item.parsed.x}`,
+                          `${consumptionYAxisText}: ${item.parsed.y}`
+                        ],
+                        labelColor: (item) => ({ borderColor: item.dataset.borderColor, backgroundColor: item.dataset.borderColor }),
                         labelTextColor: () => '#222',
                       },
                       displayColors: true,
                     },
+                    zoom: {
+                      pan: { enabled: true, mode: 'x' },
+                      zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                    },
                   },
-                  parsing: {
-                    xAxisKey: "x",
-                    yAxisKey: "y",
-                  },
+                  parsing: { xAxisKey: "x", yAxisKey: "y" },
                   scales: {
-                    x: {
-                      type: "linear",
-                      title: { display: true, text: "Speed (mph)" },
-                    },
-                    y: {
-                      type: "linear",
-                      display: true,
-                      position: "left",
-                      title: { display: true, text: consumptionYAxisText },
-                    },
+                    x: { type: "linear", title: { display: true, text: "Speed (mph)" } },
+                    y: { type: "linear", display: true, position: "left", title: { display: true, text: consumptionYAxisText } },
                   },
                 }}
               />
+              <ZoomToolbar
+                onZoomIn={() => handleZoomIn(consumptionChartRef)}
+                onZoomOut={() => handleZoomOut(consumptionChartRef)}
+                onReset={() => handleResetZoom(consumptionChartRef)}
+              />
             </div>
-            <div
-              style={{
-                width: 420,
-                height: 320,
-                padding: 12,
-                border: "1px solid rgba(0,0,0,0.45)",
-                borderRadius: 8,
-                background: "rgba(255,255,255,0.88)",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-              }}
-            >
+            <div style={{ width: 420, height: 320, padding: 12, border: "1px solid rgba(0,0,0,0.45)", borderRadius: 8, background: "rgba(255,255,255,0.88)", boxShadow: "0 4px 12px rgba(0,0,0,0.12)", position: 'relative' }}>
               <Line
+                ref={emissionChartRef}
                 key={`emission-${updateCounter}`}
                 data={emissionChartData}
                 options={{
@@ -794,60 +805,38 @@ export default function EnergyConsumptionAndEmissionRates() {
                     legend: { display: false },
                     tooltip: {
                       enabled: true,
-                      backgroundColor: '#fff', // White background
+                      backgroundColor: '#fff',
                       titleColor: '#222',
                       bodyColor: '#222',
                       borderColor: '#ccc',
                       borderWidth: 1,
                       callbacks: {
-                        title: (items) => {
-                          return items[0]?.dataset?.label || '';
-                        },
-                        label: (item) => {
-                          const speed = item.parsed.x;
-                          const value = item.parsed.y;
-                          return [
-                            `Speed: ${speed}`,
-                            `${emissionType || "Selected Emission Type"}: ${value}`
-                          ];
-                        },
-                        labelColor: (item) => {
-                          return {
-                            borderColor: item.dataset.borderColor,
-                            backgroundColor: item.dataset.borderColor,
-                          };
-                        },
+                        title: (items) => items[0]?.dataset?.label || '',
+                        label: (item) => [
+                          `Speed: ${item.parsed.x}`,
+                          `${emissionType || "Selected Emission Type"}: ${item.parsed.y}`
+                        ],
+                        labelColor: (item) => ({ borderColor: item.dataset.borderColor, backgroundColor: item.dataset.borderColor }),
                         labelTextColor: () => '#222',
                       },
                       displayColors: true,
                     },
+                    zoom: {
+                      pan: { enabled: true, mode: 'x' },
+                      zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                    },
                   },
-                  parsing: {
-                    xAxisKey: "x",
-                    yAxisKey: "y",
-                  },
+                  parsing: { xAxisKey: "x", yAxisKey: "y" },
                   scales: {
-                    x: {
-                      type: "linear",
-                      title: { display: true, text: "Speed (mph)" },
-                      min: 0,
-                      max: 70,
-                      ticks: {
-                        stepSize: 10,
-                      },
-                    },
-                    y: {
-                      type: "linear",
-                      display: true,
-                      position: "left",
-                      title: {
-                        display: true,
-                        text: `${emissionType || "Selected Emission Type"} (${emissionUnit})`,
-                      },
-                      min: 0,
-                    },
+                    x: { type: "linear", title: { display: true, text: "Speed (mph)" }, min: 0, max: 70, ticks: { stepSize: 10 } },
+                    y: { type: "linear", display: true, position: "left", title: { display: true, text: `${emissionType || "Selected Emission Type"} (${emissionUnit})` }, min: 0 },
                   },
                 }}
+              />
+              <ZoomToolbar
+                onZoomIn={() => handleZoomIn(emissionChartRef)}
+                onZoomOut={() => handleZoomOut(emissionChartRef)}
+                onReset={() => handleResetZoom(emissionChartRef)}
               />
             </div>
             {/* Shared Legend on the side */}
