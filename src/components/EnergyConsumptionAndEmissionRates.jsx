@@ -765,12 +765,18 @@ export default function EnergyConsumptionAndEmissionRates() {
                       borderColor: '#ccc',
                       borderWidth: 1,
                       callbacks: {
-                        title: (items) => items[0]?.dataset?.label || '',
-                        label: (item) => [
-                          `Speed: ${item.parsed.x}`,
-                          `${consumptionYAxisText}: ${item.parsed.y}`
-                        ],
-                        labelColor: (item) => ({ borderColor: item.dataset.borderColor, backgroundColor: item.dataset.borderColor }),
+                        title: (items) => (items && items[0] && items[0].dataset && items[0].dataset.label) ? items[0].dataset.label : '',
+                        label: (item) => {
+                          if (!item || !item.parsed) return '';
+                          return [
+                            `Speed: ${item.parsed.x}`,
+                            `${consumptionYAxisText}: ${item.parsed.y}`
+                          ];
+                        },
+                        labelColor: (item) => {
+                          if (!item || !item.dataset) return { borderColor: '#ccc', backgroundColor: '#ccc' };
+                          return { borderColor: item.dataset.borderColor, backgroundColor: item.dataset.borderColor };
+                        },
                         labelTextColor: () => '#222',
                       },
                       displayColors: true,
@@ -812,11 +818,17 @@ export default function EnergyConsumptionAndEmissionRates() {
                       borderWidth: 1,
                       callbacks: {
                         title: (items) => items[0]?.dataset?.label || '',
-                        label: (item) => [
-                          `Speed: ${item.parsed.x}`,
-                          `${emissionType || "Selected Emission Type"}: ${item.parsed.y}`
-                        ],
-                        labelColor: (item) => ({ borderColor: item.dataset.borderColor, backgroundColor: item.dataset.borderColor }),
+                        label: (item) => {
+                          if (!item || !item.parsed) return '';
+                          return [
+                            `Speed: ${item.parsed.x}`,
+                            `${emissionType || "Selected Emission Type"}: ${item.parsed.y}`
+                          ];
+                        },
+                        labelColor: (item) => {
+                          if (!item || !item.dataset) return { borderColor: '#ccc', backgroundColor: '#ccc' };
+                          return { borderColor: item.dataset.borderColor, backgroundColor: item.dataset.borderColor };
+                        },
                         labelTextColor: () => '#222',
                       },
                       displayColors: true,
