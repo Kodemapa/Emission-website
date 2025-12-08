@@ -327,7 +327,7 @@ function ProjectedDemand() {
           </>
         ) : null}
         {showTable && projectedDemandState.speedEstimated && projectedDemandState.projectedTrafficVolumeData?.length > 0 ? (
-          <div className="bg-[#f7f7f9] text-[#222222]" style={{ width: '1000px', margin: '0 auto' }}>
+          <div className="bg-[#f7f7f9] text-[#222222]" style={{ width: '1000px', margin: '0 auto', overflowX: 'auto', overflowY: 'hidden' }}>
             <div style={{
               width: '1000px',
               background: '#f7f7f9',
@@ -339,23 +339,25 @@ function ProjectedDemand() {
             }}>
               <span>Projected Increase In Traffic Volumes</span>
             </div>
-            <HotTable
-              className="overflow-auto"
-              style={{ width: '1000px', minHeight: 500, borderRadius: 0 }}
-              data={projectedDemandState.projectedTrafficVolumeData}
-              colHeaders={projectedDemandState.projectedTrafficVolumeHeaders}
-              rowHeaders
-              stretchH="all"
-              licenseKey="non-commercial-and-evaluation"
-              themeName={theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"}
-              pagination={false}
-              renderPagination={false}
-              afterGetColHeader={(col, TH) => {
-                TH.style.textAlign = 'left';
-                TH.style.paddingLeft = '5px';
-                TH.style.fontWeight = 'bold';
-              }}
-            />
+            <div style={{ width: '1000px', overflowX: 'auto', overflowY: 'hidden' }}>
+              <HotTable
+                className="overflow-auto"
+                style={{ width: '1000px', minHeight: 500, borderRadius: 0 }}
+                data={projectedDemandState.projectedTrafficVolumeData}
+                colHeaders={projectedDemandState.projectedTrafficVolumeHeaders}
+                rowHeaders
+                stretchH="all"
+                licenseKey="non-commercial-and-evaluation"
+                themeName={theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"}
+                pagination={false}
+                renderPagination={false}
+                afterGetColHeader={(col, TH) => {
+                  TH.style.textAlign = 'left';
+                  TH.style.paddingLeft = '5px';
+                  TH.style.fontWeight = 'bold';
+                }}
+              />
+            </div>
           </div>
         ) : showTable && projectedDemandState.speedEstimated ? (
           <div className="min-w-[60%] flex items-center justify-center h-[500px] text-gray-500">
