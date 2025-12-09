@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import useAppStore from "../useAppStore";
 import Atlanta from "../assets/Georgia.svg";
 import LosAngeles from "../assets/California.svg";
@@ -21,6 +22,36 @@ import {
 } from "@mui/material";
 import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
+
+// --- Reusable Zoom Toolbar Component ---
+const ZoomToolbar = ({ onZoomIn, onZoomOut, onReset }) => (
+  <div className="absolute top-4 right-4 z-10 flex bg-white rounded border border-gray-300 shadow-sm overflow-hidden select-none">
+    <button
+      onClick={onZoomIn}
+      className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+      title="Zoom In"
+      type="button"
+    >
+      +
+    </button>
+    <button
+      onClick={onZoomOut}
+      className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+      title="Zoom Out"
+      type="button"
+    >
+      -
+    </button>
+    <button
+      onClick={onReset}
+      className="px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-gray-50 uppercase tracking-wide transition-colors"
+      title="Reset Zoom"
+      type="button"
+    >
+      RESET
+    </button>
+  </div>
+);
 
 const GridEmissionRates = ({ activeStep, isResults }) => {
   const classificationState = useAppStore((state) => state.classificationState);
@@ -151,6 +182,19 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
     }
   };
 
+  // --- Zoom State for AnalysisImage ---
+  const [imageZoom, setImageZoom] = useState(1);
+
+  // Zoom Handlers
+  const handleZoomIn = () => setImageZoom((prev) => Math.min(prev + 0.25, 3.5)); // Max zoom 3.5x
+  const handleZoomOut = () => setImageZoom((prev) => Math.max(prev - 0.25, 1)); // Min zoom 1x
+  const handleResetZoom = () => setImageZoom(1);
+
+  // Reset zoom when emission type or city changes
+  useEffect(() => {
+    setImageZoom(1);
+  }, [GridEmissionState.EmissionType, classificationState.cityInput]);
+
   return (
     <div className="flex flex-row items-stretch gap-6 pl-6 pt-4">
       {/* Logo image on the left */}
@@ -232,14 +276,27 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
         </form>
         
         <div className="flex flex-row items-start gap-8 w-full">
-          <div className="flex-1">
+          <div className="flex-1 relative">
             {classificationState.cityInput && GridEmissionState.EmissionType ? (
-              <AnalysisImage
-                emissionType={GridEmissionState.EmissionType}
-                city={classificationState.cityInput}
-                className="max-w-[900px] w-full h-auto object-contain rounded self-start"
-                fallback={<div className="text-sm text-red-600">Image not found</div>}
-              />
+              <div className="relative w-full max-w-[900px]">
+                <div className="w-full h-auto overflow-x-auto overflow-y-auto bg-gray-50" style={{ minHeight: 320, minWidth: 320, whiteSpace: 'nowrap' }}>
+                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div style={{ height: 100, display: 'inline-block', transition: 'transform 0.2s', transform: `scaleX(${imageZoom})`, transformOrigin: 'left center' }}>
+                      <AnalysisImage
+                        emissionType={GridEmissionState.EmissionType}
+                        city={classificationState.cityInput}
+                        className="h-[320px] w-auto object-contain rounded self-start"
+                        fallback={<div className="text-sm text-red-600">Image not found</div>}
+                      />
+                    </div>
+                    <ZoomToolbar
+                      onZoomIn={handleZoomIn}
+                      onZoomOut={handleZoomOut}
+                      onReset={handleResetZoom}
+                    />
+                  </div>
+                </div>
+              </div>
             ) : null}
           </div>
           <img

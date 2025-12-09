@@ -52,7 +52,27 @@ function getRandomColor(idx) {
 }
 
 const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
-  const [dailyAnnualSelection, setDailyAnnualSelection] = useState('DAILY'); // Default to DAILY
+    const [dailyAnnualSelection, setDailyAnnualSelection] = useState('DAILY'); // Default to DAILY
+  // Zoom state and handlers for fuel/emission charts
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 3.5;
+  const ZOOM_STEP = 0.25;
+  const [fuelZoom, setFuelZoom] = useState(MIN_ZOOM);
+  const [emissionZoom, setEmissionZoom] = useState(MIN_ZOOM);
+  const handleFuelZoomIn = () => setFuelZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
+  const handleFuelZoomOut = () => setFuelZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
+  const handleFuelResetZoom = () => setFuelZoom(MIN_ZOOM);
+  const handleEmissionZoomIn = () => setEmissionZoom((prev) => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
+  const handleEmissionZoomOut = () => setEmissionZoom((prev) => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
+  const handleEmissionResetZoom = () => setEmissionZoom(MIN_ZOOM);
+  // Grid chart zoom states
+  const [gridZoomCO2, setGridZoomCO2] = useState(MIN_ZOOM);
+  const [gridZoomCH4, setGridZoomCH4] = useState(MIN_ZOOM);
+  const [gridZoomN2O, setGridZoomN2O] = useState(MIN_ZOOM);
+  // Handlers for grid charts
+  const handleGridZoomIn = (setter, value) => setter(Math.min(value + ZOOM_STEP, MAX_ZOOM));
+  const handleGridZoomOut = (setter, value) => setter(Math.max(value - ZOOM_STEP, MIN_ZOOM));
+  const handleGridResetZoom = (setter) => setter(MIN_ZOOM);
   const ConsumptionAndEmissionState = useAppStore(
     (s) => s.ConsumptionAndEmission
   );
@@ -269,102 +289,301 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
       {/* Content Area - Charts and Map */}
         <div className="flex flex-row gap-6 items-center">
       {resultsSelection === "VEHICLE" && (
-          <>
-            <div className="flex flex-col gap-8 flex-1">
-              {fuelType && fuelSrc && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                  <img
-                    src={fuelSrc}
-                    className="max-w-[700px] w-full h-auto object-contain rounded"
-                    alt="Fuel consumption chart"
-                  />
-                  <div style={{ fontWeight: 400, fontSize: 16, marginTop: -20, textAlign: 'center', width: 'auto' }}>
-                    {fuelType} Consumption
+        <>
+          <div className="flex flex-col gap-8 flex-1">
+            {/* Fuel Chart */}
+            {fuelType && fuelSrc && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                <div style={{ width: '100%', maxWidth: 900, position: 'relative' }}>
+                  <div style={{ width: '100%', minWidth: 320, minHeight: 320, overflowX: 'auto', overflowY: 'auto', background: '#f9fafb', whiteSpace: 'nowrap', borderRadius: 8 }}>
+                    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                      <div style={{ display: 'inline-block', transition: 'transform 0.2s', transform: `scaleX(${fuelZoom})`, transformOrigin: 'left center' }}>
+                        <img
+                          src={fuelSrc}
+                          className="h-[320px] w-auto object-contain rounded"
+                          alt="Fuel consumption chart"
+                          style={{ borderRadius: '8px', display: 'inline-block' }}
+                        />
+                      </div>
+                      <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 4, background: '#fff', borderRadius: 6, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', padding: '4px 8px', zIndex: 2 }}>
+                        <button
+                          onClick={handleFuelZoomIn}
+                          className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+                          disabled={fuelZoom >= MAX_ZOOM}
+                          title="Zoom In"
+                          type="button"
+                        >+
+                        </button>
+                        <button
+                          onClick={handleFuelZoomOut}
+                          className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+                          disabled={fuelZoom <= MIN_ZOOM}
+                          title="Zoom Out"
+                          type="button"
+                        >-
+                        </button>
+                        <button
+                          onClick={handleFuelResetZoom}
+                          className="px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-gray-50 uppercase tracking-wide transition-colors"
+                          title="Reset Zoom"
+                          type="button"
+                        >RESET
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
-              {emissionType && emissionSrc && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                  <img
-                    src={emissionSrc}
-                    className="max-w-[700px] w-full h-auto object-contain rounded"
-                    alt="Emission chart"
-                  />
-                  <div style={{ fontWeight: 400, fontSize: 16, marginTop: -20, textAlign: 'center', width: 'auto' }}
-                    dangerouslySetInnerHTML={{ __html: `${emissionType.replace('CO2', 'CO<sub>2</sub>').replace('NOx', 'NO<sub>x</sub>') } Emission` }}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col gap-4 flex-shrink-0 ml-auto">
-              {/* Vehicle Types Legend */}
-              <div
-                style={{
-                  minWidth: 240,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-start",
-                  padding: 12,
-                  border: "1px solid rgba(0,0,0,0.45)",
-                  borderRadius: 8,
-                  background: "rgba(255,255,255,0.88)",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-                }}
-              >
-                <div
-                  style={{ fontWeight: "bold", marginBottom: 6, fontSize: 16 }}
-                >
-                  Vehicle Types
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                  {VEHICLE_TYPES.map((type, idx) => (
-                    <div
-                      key={type}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        marginBottom: 1,
-                      }}
-                    >
-                      <span
-                        style={{
-                          display: "inline-block",
-                          width: 20,
-                          height: 2,
-                          backgroundColor: getRandomColor(idx),
-                          marginRight: 8,
-                          borderRadius: 1,
-                        }}
-                      />
-                      <span style={{ fontSize: 13, fontWeight: 500 }}>
-                        {type}
-                      </span>
+                <div style={{ height: 40 }}></div>
+                <div style={{ fontWeight: 400, fontSize: 16, marginTop: -20, textAlign: 'center', width: 'auto' }}>{fuelType} Consumption</div>
+              </div>
+            )}
+            {/* Emission Chart */}
+            {emissionType && emissionSrc && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                <div style={{ width: '100%', maxWidth: 900, position: 'relative' }}>
+                  <div style={{ width: '100%', minWidth: 320, minHeight: 320, overflowX: 'auto', overflowY: 'auto', background: '#f9fafb', whiteSpace: 'nowrap', borderRadius: 8 }}>
+                    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                      <div style={{ display: 'inline-block', transition: 'transform 0.2s', transform: `scaleX(${emissionZoom})`, transformOrigin: 'left center' }}>
+                        <img
+                          src={emissionSrc}
+                          className="h-[320px] w-auto object-contain rounded"
+                          alt="Emission chart"
+                          style={{ borderRadius: '8px', display: 'inline-block' }}
+                        />
+                      </div>
+                      <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 4, background: '#fff', borderRadius: 6, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', padding: '4px 8px', zIndex: 2 }}>
+                        <button
+                          onClick={handleEmissionZoomIn}
+                          className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+                          disabled={emissionZoom >= MAX_ZOOM}
+                          title="Zoom In"
+                          type="button"
+                        >+
+                        </button>
+                        <button
+                          onClick={handleEmissionZoomOut}
+                          className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+                          disabled={emissionZoom <= MIN_ZOOM}
+                          title="Zoom Out"
+                          type="button"
+                        >-
+                        </button>
+                        <button
+                          onClick={handleEmissionResetZoom}
+                          className="px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-gray-50 uppercase tracking-wide transition-colors"
+                          title="Reset Zoom"
+                          type="button"
+                        >RESET
+                        </button>
+                      </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
+                <div style={{ height: 40 }}></div>
+                <div style={{ fontWeight: 400, fontSize: 16, marginTop: -20, textAlign: 'center', width: 'auto' }}
+                  dangerouslySetInnerHTML={{ __html: `${emissionType.replace('CO2', 'CO<sub>2</sub>').replace('NOx', 'NO<sub>x</sub>') } Emission` }}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col gap-4 flex-shrink-0 ml-auto">
+            {/* Vehicle Types Legend */}
+            <div
+              style={{
+                minWidth: 240,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-start",
+                padding: 12,
+                border: "1px solid rgba(0,0,0,0.45)",
+                borderRadius: 8,
+                background: "rgba(255,255,255,0.88)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+              }}
+            >
+              <div
+                style={{ fontWeight: "bold", marginBottom: 6, fontSize: 16 }}
+              >
+                Vehicle Types
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                {VEHICLE_TYPES.map((type, idx) => (
+                  <div
+                    key={type}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: 1,
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: 20,
+                        height: 2,
+                        backgroundColor: getRandomColor(idx),
+                        marginRight: 8,
+                        borderRadius: 1,
+                      }}
+                    />
+                    <span style={{ fontSize: 13, fontWeight: 500 }}>
+                      {type}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
-          </>
-        )}
+          </div>
+        </>
+      )}
         
   {resultsSelection === "GRID" && (
            <div className="flex flex-row gap-16 items-center">
             <div className="flex flex-col gap-6 flex-1">
-              <img
-                src={getR3EmissionImgUrl("CO2", cityName)}
-                className="max-w-[700px] w-full h-auto object-contain rounded"
-                alt="CO2 Grid Emission"
-              />
-              <img
-                src={getR3EmissionImgUrl("CH4", cityName)}
-                className="max-w-[700px] w-full h-auto object-contain rounded"
-                alt="CH4 Grid Emission"
-              />
-              <img
-                src={getR3EmissionImgUrl("N2O", cityName)}
-                className="max-w-[700px] w-full h-auto object-contain rounded"
-                alt="N2O Grid Emission"
-              />
+              {/* CO2 Grid Chart */}
+              <div className="flex flex-col items-center w-full">
+                <div className="relative w-full" style={{ minWidth: 320 }}>
+                  <div className="overflow-x-auto overflow-y-auto bg-gray-50" style={{ minHeight: 120, minWidth: 320, whiteSpace: 'nowrap' }}>
+                    <div style={{ position: 'relative', height: '100%' }}>
+                      <img
+                        src={getR3EmissionImgUrl("CO2", cityName)}
+                        className="h-[320px] rounded"
+                        alt="CO2 Grid Emission"
+                        style={{
+                          transition: 'transform 0.2s',
+                          height: '220px',
+                          width: '700px',
+                          borderRadius: '8px',
+                          display: 'inline-block',
+                          transform: `scaleX(${gridZoomCO2})`,
+                          transformOrigin: 'left center',
+                        }}
+                      />
+                      <div className="absolute top-4 right-4 z-10 flex bg-white rounded border border-gray-300 shadow-sm overflow-hidden select-none">
+                        <button
+                          onClick={() => handleGridZoomIn(setGridZoomCO2, gridZoomCO2)}
+                          className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+                          disabled={gridZoomCO2 >= MAX_ZOOM}
+                          title="Zoom In"
+                          type="button"
+                        >+
+                        </button>
+                        <button
+                          onClick={() => handleGridZoomOut(setGridZoomCO2, gridZoomCO2)}
+                          className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+                          disabled={gridZoomCO2 <= MIN_ZOOM}
+                          title="Zoom Out"
+                          type="button"
+                        >-
+                        </button>
+                        <button
+                          onClick={() => handleGridResetZoom(setGridZoomCO2)}
+                          className="px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-gray-50 uppercase tracking-wide transition-colors"
+                          title="Reset Zoom"
+                          type="button"
+                        >RESET
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* CH4 Grid Chart */}
+              <div className="flex flex-col items-center w-full">
+                <div className="relative w-full" style={{ minWidth: 320 }}>
+                  <div className="overflow-x-auto overflow-y-auto bg-gray-50" style={{ minHeight: 120, minWidth: 320, whiteSpace: 'nowrap' }}>
+                    <div style={{ position: 'relative', height: '100%' }}>
+                      <img
+                        src={getR3EmissionImgUrl("CH4", cityName)}
+                        className="h-[320px] rounded"
+                        alt="CH4 Grid Emission"
+                        style={{
+                          transition: 'transform 0.2s',
+                          height: '220px',
+                          width: '700px',
+                          borderRadius: '8px',
+                          display: 'inline-block',
+                          transform: `scaleX(${gridZoomCH4})`,
+                          transformOrigin: 'left center',
+                        }}
+                      />
+                      <div className="absolute top-4 right-4 z-10 flex bg-white rounded border border-gray-300 shadow-sm overflow-hidden select-none">
+                        <button
+                          onClick={() => handleGridZoomIn(setGridZoomCH4, gridZoomCH4)}
+                          className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+                          disabled={gridZoomCH4 >= MAX_ZOOM}
+                          title="Zoom In"
+                          type="button"
+                        >+
+                        </button>
+                        <button
+                          onClick={() => handleGridZoomOut(setGridZoomCH4, gridZoomCH4)}
+                          className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+                          disabled={gridZoomCH4 <= MIN_ZOOM}
+                          title="Zoom Out"
+                          type="button"
+                        >-
+                        </button>
+                        <button
+                          onClick={() => handleGridResetZoom(setGridZoomCH4)}
+                          className="px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-gray-50 uppercase tracking-wide transition-colors"
+                          title="Reset Zoom"
+                          type="button"
+                        >RESET
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* N2O Grid Chart */}
+              <div className="flex flex-col items-center w-full">
+                <div className="relative w-full" style={{ minWidth: 320 }}>
+                  <div className="overflow-x-auto overflow-y-auto bg-gray-50" style={{ minHeight: 120, minWidth: 320, whiteSpace: 'nowrap' }}>
+                    <div style={{ position: 'relative', height: '100%' }}>
+                      <img
+                        src={getR3EmissionImgUrl("N2O", cityName)}
+                        className="h-[320px] rounded"
+                        alt="N2O Grid Emission"
+                        style={{
+                          transition: 'transform 0.2s',
+                          height: '220px',
+                          width: '700px',
+                          borderRadius: '8px',
+                          display: 'inline-block',
+                          transform: `scaleX(${gridZoomN2O})`,
+                          transformOrigin: 'left center',
+                        }}
+                      />
+                      <div className="absolute top-4 right-4 z-10 flex bg-white rounded border border-gray-300 shadow-sm overflow-hidden select-none">
+                        <button
+                          onClick={() => handleGridZoomIn(setGridZoomN2O, gridZoomN2O)}
+                          className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+                          disabled={gridZoomN2O >= MAX_ZOOM}
+                          title="Zoom In"
+                          type="button"
+                        >+
+                        </button>
+                        <button
+                          onClick={() => handleGridZoomOut(setGridZoomN2O, gridZoomN2O)}
+                          className="px-3 py-1 text-blue-600 hover:bg-gray-50 border-r border-gray-200 text-lg font-bold leading-none transition-colors"
+                          disabled={gridZoomN2O <= MIN_ZOOM}
+                          title="Zoom Out"
+                          type="button"
+                        >-
+                        </button>
+                        <button
+                          onClick={() => handleGridResetZoom(setGridZoomN2O)}
+                          className="px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-gray-50 uppercase tracking-wide transition-colors"
+                          title="Reset Zoom"
+                          type="button"
+                        >RESET
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="flex flex-col gap-4 flex-shrink-0">
               <img
