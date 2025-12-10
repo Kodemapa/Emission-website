@@ -185,7 +185,7 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
   // --- Zoom State for AnalysisImage ---
   const [imageZoom, setImageZoom] = useState(1);
 
-  // Zoom Handlers
+  // Zoom Handlers (same as VehicleTrafficVolume)
   const handleZoomIn = () => setImageZoom((prev) => Math.min(prev + 0.25, 3.5)); // Max zoom 3.5x
   const handleZoomOut = () => setImageZoom((prev) => Math.max(prev - 0.25, 1)); // Min zoom 1x
   const handleResetZoom = () => setImageZoom(1);
@@ -279,22 +279,25 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
           <div className="flex-1 relative">
             {classificationState.cityInput && GridEmissionState.EmissionType ? (
               <div className="relative w-full max-w-[900px]">
-                <div className="w-full h-auto overflow-x-auto overflow-y-auto bg-gray-50" style={{ minHeight: 320, minWidth: 320, whiteSpace: 'nowrap' }}>
-                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                    <div style={{ height: 100, display: 'inline-block', transition: 'transform 0.2s', transform: `scaleX(${imageZoom})`, transformOrigin: 'left center' }}>
-                      <AnalysisImage
-                        emissionType={GridEmissionState.EmissionType}
-                        city={classificationState.cityInput}
-                        className="h-[320px] w-auto object-contain rounded self-start"
-                        fallback={<div className="text-sm text-red-600">Image not found</div>}
-                      />
-                    </div>
-                    <ZoomToolbar
-                      onZoomIn={handleZoomIn}
-                      onZoomOut={handleZoomOut}
-                      onReset={handleResetZoom}
+                <div className="w-full h-[280px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group">
+                  <div className="w-full h-full overflow-auto bg-gray-50" style={{overflow: 'auto', position: 'relative'}}>
+                    <img
+                      src={getAnalysisImgUrl(GridEmissionState.EmissionType, classificationState.cityInput)}
+                      alt="Grid Emission Plot"
+                      className="transition-all duration-200 ease-out origin-top-left max-w-none object-contain rounded"
+                      style={{
+                        width: `${imageZoom * 100}%`,
+                        height: 'auto',
+                        display: 'block',
+                      }}
+                      onError={e => { e.target.style.display = 'none'; }}
                     />
                   </div>
+                  <ZoomToolbar
+                    onZoomIn={handleZoomIn}
+                    onZoomOut={handleZoomOut}
+                    onReset={handleResetZoom}
+                  />
                 </div>
               </div>
             ) : null}
