@@ -38,7 +38,7 @@ const Header = () => {
           className="text-3xl font-bold transition-colors duration-300"
           style={{ color: '#1A237E' }}
         >
-          Atlanta Energy and Emission Modeling and Analysis Tool
+          Transportation Energy and Emission Modeling and Analysis Tool
         </h1>
         <Notifications />
       </div>

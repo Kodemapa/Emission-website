@@ -19,7 +19,7 @@ function VehicleClassification({ activeStep }) {
   const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const setClassificationState = useAppStore((s) => s.setClassificationState);
-  const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "New York"];
+  const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "New York", "Chicago", "Houston", "Miami", "Boston", "San Francisco", "Washington D.C.", "Philadelphia", "Phoenix", "San Diego", "Minneapolis", "Denver", "Las Vegas", "Nashville", "Detroit", ];
   const cityImages = { "Atlanta": Atlanta, "Los Angeles": LosAngeles, "Seattle": Seattle, "New York": NewYork };
   const verticalSteps = [
     "Vehicle Classification Data",

@@ -15,6 +15,22 @@ export default function CitySelect() {
     { label: 'Los Angeles', value: 'ca' },
     { label: 'New York', value: 'ny' },
     { label: 'Seattle', value: 'wa' },
+    { label: 'Chicago', value: 'il' },
+    { label: 'Miami', value: 'fl' },
+    { label: 'Dallas', value: 'tx' },
+    { label: 'Denver', value: 'co' },
+    { label: 'Boston', value: 'ma' },
+    { label: 'San Francisco', value: 'sf' },
+    { label: 'Washington DC', value: 'dc' },
+    { label: 'Phoenix', value: 'az' },
+    { label: 'Philadelphia', value: 'pa' },
+    { label: 'Houston', value: 'tx' },
+    { label: 'Minneapolis', value: 'mn' },
+    { label: 'Detroit', value: 'mi' },
+    { label: 'Portland', value: 'or' },
+    { label: 'Las Vegas', value: 'nv' },
+    { label: 'San Diego', value: 'ca' },
+    { label: 'Orlando', value: 'fl' },
   ];
 
   const handleNext = async () => {
