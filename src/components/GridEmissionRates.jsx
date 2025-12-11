@@ -278,7 +278,7 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
         <div className="flex flex-row items-start gap-8 w-full">
           <div className="flex-1 relative">
             {classificationState.cityInput && GridEmissionState.EmissionType ? (
-              <div className="relative w-full max-w-[900px]">
+              <div className="relative w-full max-w-[600px]">
                 <div className="w-full h-[280px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group">
                   <div className="w-full h-full overflow-auto bg-gray-50" style={{overflow: 'auto', position: 'relative'}}>
                     <img
