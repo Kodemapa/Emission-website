@@ -1,11 +1,11 @@
 import VehicleStepper from "./VerticalStepper";
-
 import React, { useState } from "react";
 import InputStepper from "./InputStepper";
 import AnalysisStepper from "./AnalysisStepper";
 import useAppStore from '../useAppStore';
 import { toast } from "react-toastify";
 import FinalResultsPage from "./FinalResultsPage";
+
 export default function ArrowStepper() {
   // Track Vehicle/Grid selection for Results step, default to empty
   const [resultsSelection, setResultsSelection] = useState("");
@@ -223,7 +223,7 @@ export default function ArrowStepper() {
       `}</style>
 
       {/* Top row: arrow stepper and vertical stepper side by side */}
-      <div className={`flex flex-row items-start gap-16 w-full justify-center ${activeStep !== -1 ? 'pl-56' : 'pl-8'}`}>
+      <div className={`flex flex-row items-start gap-16 w-full justify-center ${activeStep === 0 ? '-ml-6' : ''} ${(activeStep === 1 || activeStep === 2) ? '-ml-4' : ''} ${activeStep !== -1 ? 'pl-56' : ''}`}>
         {/* Arrow stepper */}
         <div
           className="flex items-center gap-4"
@@ -232,7 +232,7 @@ export default function ArrowStepper() {
           }
         >
           {steps.map((step, index) => (
-            <div key={step} className={getStepStyle(index) + " min-w-[210px]"}>
+            <div key={step} className={getStepStyle(index) + " min-w-[232px]"}>
               <span>{step}</span>
             </div>
           ))}
@@ -264,7 +264,16 @@ export default function ArrowStepper() {
                 // Use Vehicle/Grid selection from FinalResultsPage
                 stepperActiveStep = resultsSelection === "GRID" ? 1 : 0;
                 stepperSteps = analysisSteps;
-                return <VehicleStepper activeStep={stepperActiveStep} steps={stepperSteps} />;
+                // ADDED: onStepChange handler to switch tabs
+                return (
+                  <VehicleStepper 
+                    activeStep={stepperActiveStep} 
+                    steps={stepperSteps} 
+                    onStepChange={(index) => {
+                       setResultsSelection(index === 0 ? "VEHICLE" : "GRID");
+                    }}
+                  />
+                );
               }
               return <VehicleStepper activeStep={stepperActiveStep} steps={stepperSteps} />;
             })()}

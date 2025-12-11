@@ -24,7 +24,7 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
     };
     const baseColumns = headers.map((h) => ({
       field: String(h),
-      headerName: String(h),
+      headerName: h === "R^2" ? "R₂" : String(h),
       flex: 1,
       minWidth: 120,
       sortable: false,

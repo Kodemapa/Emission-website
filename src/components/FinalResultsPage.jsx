@@ -12,7 +12,7 @@ import {
   buildR2FileNameFromFuel,
 } from "../utils/resultsTwoAssets";
 import { getR3EmissionImgUrl } from "../utils/resultsThirdAssets.js";
-import gridData from "../assets/griddata1.png";
+import gridData from "../assets/gridData.jpg";
 import Button from "@mui/material/Button";
 import { useState } from "react";
 
@@ -449,7 +449,7 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
               {/* CO2 Grid Chart */}
               <div className="flex flex-col items-center w-full">
                 <div className="relative" style={{ width: '70%', minWidth: 320 }}>
-                  <div className="w-full h-[250px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: '#f9fafb' }}>
+                  <div className="w-full h-[280px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: '#f9fafb' }}>
                     <div className="w-full h-full overflow-auto bg-gray-50" style={{ overflow: 'auto', position: 'relative' }}>
                       <img
                         src={getR3EmissionImgUrl("CO2", cityName)}
@@ -494,7 +494,7 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
               {/* CH4 Grid Chart */}
               <div className="flex flex-col items-center w-full">
                 <div className="relative" style={{ width: '70%', minWidth: 320 }}>
-                  <div className="w-full h-[250px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: '#f9fafb' }}>
+                  <div className="w-full h-[280px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: '#f9fafb' }}>
                     <div className="w-full h-full overflow-auto bg-gray-50" style={{ overflow: 'auto', position: 'relative' }}>
                       <img
                         src={getR3EmissionImgUrl("CH4", cityName)}
@@ -539,7 +539,7 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
               {/* N2O Grid Chart */}
               <div className="flex flex-col items-center w-full">
                 <div className="relative" style={{ width: '70%', minWidth: 320 }}>
-                  <div className="w-full h-[250px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: '#f9fafb' }}>
+                  <div className="w-full h-[280px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: '#f9fafb' }}>
                     <div className="w-full h-full overflow-auto bg-gray-50" style={{ overflow: 'auto', position: 'relative' }}>
                       <img
                         src={getR3EmissionImgUrl("N2O", cityName)}
@@ -587,7 +587,7 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
                 src={gridData}
                 alt="Grid Scenarios Legend"
                 className="h-[400px] object-contain rounded border border-gray-100"
-                style={{ maxWidth: '420px', marginTop: '-30px' }}
+                style={{ maxWidth: '420px', marginTop: '-30px', transform: 'translateX(-200px)' }}
               />
             </div>
           </div>

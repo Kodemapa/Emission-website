@@ -14,13 +14,40 @@ import NewYork from "../assets/NewYork.svg";
 import VehicleStepper from "./VerticalStepper";
 import useAppStore from "../useAppStore";
 
+// Register Handsontable modules
+registerAllModules();
 
 function VehicleClassification({ activeStep }) {
   const theme = useAppStore((s) => s.theme);
   const classificationState = useAppStore((s) => s.classificationState);
   const setClassificationState = useAppStore((s) => s.setClassificationState);
-  const statesList = ["", "Atlanta", "Los Angeles", "Seattle", "New York", "Chicago", "Houston", "Miami", "Boston", "San Francisco", "Washington D.C.", "Philadelphia", "Phoenix", "San Diego", "Minneapolis", "Denver", "Las Vegas", "Nashville", "Detroit", ];
-  const cityImages = { "Atlanta": Atlanta, "Los Angeles": LosAngeles, "Seattle": Seattle, "New York": NewYork };
+  const statesList = [
+    "",
+    "Atlanta",
+    "Los Angeles",
+    "Seattle",
+    "New York",
+    "Chicago",
+    "Houston",
+    "Miami",
+    "Boston",
+    "San Francisco",
+    "Washington D.C.",
+    "Philadelphia",
+    "Phoenix",
+    "San Diego",
+    "Minneapolis",
+    "Denver",
+    "Las Vegas",
+    "Nashville",
+    "Detroit",
+  ];
+  const cityImages = {
+    "Atlanta": Atlanta,
+    "Los Angeles": LosAngeles,
+    "Seattle": Seattle,
+    "New York": NewYork,
+  };
   const verticalSteps = [
     "Vehicle Classification Data",
     "Projected Vehicle Penetration Rate Data",
@@ -38,7 +65,10 @@ function VehicleClassification({ activeStep }) {
   const paginatedData = React.useMemo(() => {
     if (!classificationState.classificationData) return [];
     const start = currentPage * rowsPerPage;
-    return classificationState.classificationData.slice(start, start + rowsPerPage);
+    return classificationState.classificationData.slice(
+      start,
+      start + rowsPerPage
+    );
   }, [classificationState.classificationData, currentPage, rowsPerPage]);
 
   const handleRowsPerPageChange = (e) => {
@@ -90,19 +120,28 @@ function VehicleClassification({ activeStep }) {
           data.transaction_id
         );
         window.dispatchEvent(
-          new CustomEvent("app-notification", { detail: { text: "Error: Please select a city and upload a valid file." } })
+          new CustomEvent("app-notification", {
+            detail: {
+              text: "Error: Please select a city and upload a valid file.",
+            },
+          })
         );
       }
 
       window.dispatchEvent(
-        new CustomEvent("app-notification", { detail: { text: "Data uploaded successfully!" } })
+        new CustomEvent("app-notification", {
+          detail: { text: "Data uploaded successfully!" },
+        })
       );
     } catch (err) {
       window.dispatchEvent(
-        new CustomEvent("app-notification", { detail: { text: "Upload failed: " + err.message } })
+        new CustomEvent("app-notification", {
+          detail: { text: "Upload failed: " + err.message },
+        })
       );
     }
   };
+  
   const filterByVehicle = React.useCallback((rows, vehicleType) => {
     if (!rows || rows.length === 0) return [];
     if (!vehicleType) return rows;
@@ -131,6 +170,10 @@ function VehicleClassification({ activeStep }) {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
+    
+    // ✅ Fix: Reset input value so same file can be selected again
+    e.target.value = "";
+
     if (file) {
       console.log("Selected file:", file.name);
     }
@@ -162,8 +205,8 @@ function VehicleClassification({ activeStep }) {
             : "Existing data uploaded (no change)."
         );
 
+        // ✅ Fix: Do not spread ...classificationState (avoids stale state overwrites)
         setClassificationState({
-          ...classificationState,
           classificationHeaders: headers,
           allClassificationData: rows,
         });
@@ -260,15 +303,26 @@ function VehicleClassification({ activeStep }) {
               </div>
               {/* City */}
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <label className="text-xs font-medium text-gray-600">City</label>
+                <label className="text-xs font-medium text-gray-600">
+                  City
+                </label>
                 <select
                   value={classificationState.cityInput}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const newCity = e.target.value;
+                    // Reset all data including Base Year and Vehicle Type if city changes
                     setClassificationState({
-                      cityInput: e.target.value,
-                      city: e.target.value,
-                    })
-                  }
+                      cityInput: newCity,
+                      city: newCity,
+                      allClassificationData: [],
+                      classificationData: [],
+                      classificationHeaders: [],
+                      classificationFile: null,
+                      uploadedFile: null,
+                      baseYear: "",      // Reset Base Year
+                      vehicleType: "",   // Reset Vehicle Type
+                    });
+                  }}
                   className={`border rounded px-2 py-1 w-full transition-colors duration-300 ${
                     theme === "dark"
                       ? "bg-[#18181b] text-white border-gray-700"
@@ -288,7 +342,11 @@ function VehicleClassification({ activeStep }) {
             <div className="flex w-full justify-end mt-2">
               <label
                 className={`flex items-center font-semibold px-3 py-1.5 rounded cursor-pointer h-[36px] text-sm transition-colors duration-300 whitespace-nowrap w-full max-w-[300px]
-                  ${theme === "dark" ? "bg-blue-900 text-white" : "bg-blue-400 text-white"}`}
+                  ${
+                    theme === "dark"
+                      ? "bg-blue-900 text-white"
+                      : "bg-blue-400 text-white"
+                  }`}
                 style={{ minWidth: 0 }}
               >
                 <span className="flex items-center gap-2 w-full justify-center">
@@ -306,67 +364,70 @@ function VehicleClassification({ activeStep }) {
             </div>
           </form>
 
-        {/* Handsontable */}
-        {classificationState.classificationData?.length > 0 ? (
-          <div className="flex-1 w-full min-w-0 overflow-auto" style={{ minHeight: 320, maxHeight: 480 }}>
-            <div className="flex items-center justify-end mb-2">
-              <label className="mr-2 font-semibold">Rows per page:</label>
-              <select
-                value={rowsPerPage}
-                onChange={handleRowsPerPageChange}
-                className="border rounded px-2 py-1"
-                style={{ width: 80 }}
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
+          {/* Handsontable */}
+          {classificationState.classificationData?.length > 0 ? (
+            <div
+              className="flex-1 w-full min-w-0 overflow-auto"
+              style={{ minHeight: 320, maxHeight: 480 }}
+            >
+              <div className="flex items-center justify-end mb-2">
+                <label className="mr-2 font-semibold">Rows per page:</label>
+                <select
+                  value={rowsPerPage}
+                  onChange={handleRowsPerPageChange}
+                  className="border rounded px-2 py-1"
+                  style={{ width: 80 }}
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+              <HotTable
+                data={paginatedData}
+                colHeaders={classificationState.classificationHeaders}
+                rowHeaders
+                stretchH="all"
+                height={350}
+                width="100%"
+                licenseKey="non-commercial-and-evaluation"
+                themeName={
+                  theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
+                }
+                afterGetColHeader={(col, TH) => {
+                  TH.style.textAlign = "left";
+                  TH.style.paddingLeft = "5px";
+                  TH.style.fontWeight = "bold";
+                }}
+              />
+              <div className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-4 mt-4">
+                <button
+                  className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
+                  onClick={handleBack}
+                  disabled={currentPage === 0}
+                  type="button"
+                >
+                  <i className="bi bi-chevron-left"></i>
+                </button>
+                <span className="px-2 py-2 font-semibold">
+                  Page {currentPage + 1} of {totalPages}
+                </span>
+                <button
+                  className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  onClick={handlePaginationNext}
+                  disabled={currentPage >= totalPages - 1}
+                  type="button"
+                >
+                  <i className="bi bi-chevron-right"></i>
+                </button>
+              </div>
             </div>
-            <HotTable
-              data={paginatedData}
-              colHeaders={classificationState.classificationHeaders}
-              rowHeaders
-              stretchH="all"
-              height={350}
-              width="100%"
-              licenseKey="non-commercial-and-evaluation"
-              themeName={
-                theme === "dark" ? "ht-theme-main-dark" : "ht-theme-main"
-              }
-              afterGetColHeader={(col, TH) => {
-                TH.style.textAlign = 'left';
-                TH.style.paddingLeft = '5px';
-                TH.style.fontWeight = 'bold';
-              }}
-            />
-            <div className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-4 mt-4">
-              <button
-                className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
-                onClick={handleBack}
-                disabled={currentPage === 0}
-                type="button"
-              >
-                <i className="bi bi-chevron-left"></i>
-              </button>
-              <span className="px-2 py-2 font-semibold">
-                Page {currentPage + 1} of {totalPages}
-              </span>
-              <button
-                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                onClick={handlePaginationNext}
-                disabled={currentPage >= totalPages - 1}
-                type="button"
-              >
-                <i className="bi bi-chevron-right"></i>
-              </button>
+          ) : (
+            <div className="flex-1 w-full min-w-0 overflow-auto">
+              {/* placeholder */}
             </div>
-          </div>
-        ) : (
-          <div className="flex-1 w-full min-w-0 overflow-auto">
-            {/* placeholder */}
-          </div>
-        )}
+          )}
         </div>
       </div>
 

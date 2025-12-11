@@ -320,12 +320,13 @@ function ProjectedDemand() {
       </div>
 
       {/* Right Column: City Map */}
-      <div className="flex flex-col gap-6 min-w-[400px]">
+      <div className="flex flex-col gap-6 min-w-[400px] items-end pr-0" style={{ alignItems: 'flex-end', width: '100%' }}>
         {mappedCity && (
           <img
             src={cityImages[mappedCity]}
             alt={mappedCity}
-            className="w-full h-[500px] object-contain rounded"
+            className="h-[500px] object-contain rounded"
+            style={{ maxWidth: '400px', marginLeft: 'auto', display: 'block' }}
           />
         )}
       </div>
