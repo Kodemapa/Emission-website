@@ -279,7 +279,7 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
           <div className="flex-1 relative">
             {classificationState.cityInput && GridEmissionState.EmissionType ? (
               <div className="relative w-full max-w-[600px]">
-                <div className="w-full h-[280px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group">
+                <div className="w-full h-[220px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group">
                   <div className="w-full h-full overflow-auto bg-gray-50" style={{overflow: 'auto', position: 'relative'}}>
                     <img
                       src={getAnalysisImgUrl(GridEmissionState.EmissionType, classificationState.cityInput)}
@@ -305,7 +305,7 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
           <img
             src={gridDataImg}
             alt="Grid Data"
-            className="h-[320px] object-contain rounded border border-gray-100"
+            className="h-[280px] object-contain rounded border border-gray-100"
             style={{ maxWidth: '99%', marginTop: '-56px', minHeight: '320px' }}
           />
         </div>
