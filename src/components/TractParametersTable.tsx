@@ -21,17 +21,43 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
       align: 'center',
       headerAlign: 'center',
       cellClassName: 'sno-cell',
+      resizable: false,
+      disableColumnReorder: true,
     };
-    const baseColumns = headers.map((h) => ({
-      field: String(h),
-      headerName: h === "R^2" ? "R²" : String(h), // Use unicode superscript 2 for compatibility
-      flex: 1,
-      minWidth: 120,
-      sortable: false,
-      headerClassName: 'custom-header',
-      align: 'center',
-      headerAlign: 'center',
-    }));
+    const baseColumns = headers.map((h) => {
+      const name = h === "R^2" ? "R²" : String(h);
+      if (name.toLowerCase().includes('tract id')) {
+        // Tract ID column: fixed width (default logic)
+        const width = Math.max(100, Math.min(200, name.length * 12 + 40));
+        return {
+          field: String(h),
+          headerName: name,
+          width,
+          sortable: false,
+          headerClassName: 'custom-header',
+          align: 'center',
+          headerAlign: 'center',
+          resizable: false,
+          disableColumnReorder: true,
+        };
+      } else {
+        // Other columns: minWidth = calculated width, maxWidth = minWidth + 100
+        const minWidth = Math.max(100, Math.min(200, name.length * 12 + 40));
+        return {
+          field: String(h),
+          headerName: name,
+          minWidth,
+          maxWidth: minWidth + 100,
+          width: minWidth + 50, // default width in between
+          sortable: false,
+          headerClassName: 'custom-header',
+          align: 'center',
+          headerAlign: 'center',
+          resizable: false,
+          disableColumnReorder: true,
+        };
+      }
+    });
     return [snoCol, ...baseColumns];
   }, [headers]);
 
@@ -56,38 +82,6 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
 
   const paginatedRows = allRows.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-  const handleNext = async () => {
-    // Send all relevant data to backend
-    const payload = {
-      city: trafficState.city || '',
-      base_year: trafficState.baseYear || '',
-      mfd_table_data: trafficState.trafficMFTParametersData,
-      mfd_table_headers: trafficState.trafficMFTParametersHeaders,
-    };
-    try {
-      const res = await fetch('http://localhost:5003/upload/mfd_params', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error('Upload failed');
-      const data = await res.json();
-      console.log('Backend response:', data);
-      window.dispatchEvent(
-        new CustomEvent("app-notification", { detail: { text: "Data uploaded successfully!" } })
-      );
-      // Optionally show a message or move to next page
-    } catch (err) {
-      window.dispatchEvent(
-        new CustomEvent("app-notification", { detail: { text: "Upload failed: " + (err as Error).message } })
-      );
-    }
-    // Don't change pagination here - this is for step progression
-  };
-  
-  // Pagination functions
-  const handlePaginationNext = () => setPage((p: number) => Math.min(p + 1, pageCount));
-  const handleBack = () => setPage((p: number) => Math.max(p - 1, 1));
 
   return allRows.length ? (
     <Box
@@ -95,58 +89,58 @@ function TractParametersTable({ trafficState }: { trafficState: any }) {
   sx={{ minHeight: 0 }}                 // IMPORTANT in flex layouts
 >
   <div style={{ height: 400, width: "100%" }}>  {/* fixed height, not maxHeight */}
-    <DataGrid
-      rows={allRows}
-      columns={columns}
-      getRowId={(r) => r.id}
-      disableColumnMenu
-      disableRowSelectionOnClick
-      checkboxSelection={false}
-      slots={{ footer: () => null }}
-
-      // Let DataGrid manage scrolling; no need to force overflow here
-      sx={{
-        border: '1px solid #ccc',
-        borderRadius: 1,
-        textAlign: 'center',
-        "& .MuiDataGrid-columnHeaders": {
-          backgroundColor: '#f3f4f6',
-          borderBottom: '1px solid #ccc',
-        },
-        "& .MuiDataGrid-columnHeader": {
-          borderRight: '1px solid #ccc',
-          color: '#121315ff',
-          fontWeight: 'bold !important',
-          fontFamily: 'Segoe UI Bold, Segoe UI, Arial, sans-serif !important',
-          textTransform: 'none',
-          backgroundColor: '#f3f4f6',
+      <DataGrid
+        rows={allRows}
+        columns={columns}
+        getRowId={(r) => r.id}
+        disableColumnMenu
+        disableRowSelectionOnClick
+        checkboxSelection={false}
+        slots={{ footer: () => null }}
+        disableColumnReorder
+        disableColumnResize
+        sx={{
+          border: '1px solid #ccc',
+          borderRadius: 1,
           textAlign: 'center',
-        },
-        "& .MuiDataGrid-columnHeader:last-child": {
-          borderRight: 'none',
-        },
-        "& .MuiDataGrid-cell": {
-          color: theme === "dark" ? "#e5e7eb" : undefined,
-          borderRight: '1px solid #eee',
-          borderBottom: '1px solid #eee',
-          textAlign: 'center',
-        },
-        "& .sno-cell": {
-          color: '#6b7280',
-          backgroundColor: '#f3f4f6',
-          fontWeight: 500,
-        },
-        "& .MuiDataGrid-row:last-child .MuiDataGrid-cell": {
-          borderBottom: 'none',
-        },
-        "& .MuiDataGrid-cell:last-child": {
-          borderRight: 'none',
-        },
-        "& .MuiDataGrid-row:hover": {
-          backgroundColor: 'inherit',
-        },
-      }}
-    />
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: '#f3f4f6',
+            borderBottom: '1px solid #ccc',
+          },
+          "& .MuiDataGrid-columnHeader": {
+            borderRight: '1px solid #ccc',
+            color: '#121315ff',
+            fontWeight: 'bold !important',
+            fontFamily: 'Segoe UI Bold, Segoe UI, Arial, sans-serif !important',
+            textTransform: 'none',
+            backgroundColor: '#f3f4f6',
+            textAlign: 'center',
+          },
+          "& .MuiDataGrid-columnHeader:last-child": {
+            borderRight: 'none',
+          },
+          "& .MuiDataGrid-cell": {
+            color: theme === "dark" ? "#e5e7eb" : undefined,
+            borderRight: '1px solid #eee',
+            borderBottom: '1px solid #eee',
+            textAlign: 'center',
+          },
+          "& .sno-cell": {
+            color: '#6b7280',
+            backgroundColor: '#f3f4f6',
+            fontWeight: 500,
+          },
+          "& .MuiDataGrid-row:last-child .MuiDataGrid-cell": {
+            borderBottom: 'none',
+          },
+          "& .MuiDataGrid-cell:last-child": {
+            borderRight: 'none',
+          },
+          "& .MuiDataGrid-row:hover": {
+            backgroundColor: 'inherit',
+          },
+        }}
+      />
   </div>
 </Box>
   ) : (

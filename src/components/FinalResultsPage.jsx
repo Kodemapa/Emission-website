@@ -332,11 +332,11 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
                     }}
                   >
                     <div
-                      className="w-full h-[280px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group"
-                      style={{ background: "#f9fafb" }}
+                      className="w-full h-[250px] border border-gray-200 rounded-lg overflow-hidden bg-white group"
+                      
                     >
                       <div
-                        className="w-full h-full overflow-auto bg-gray-50"
+                        className="w-full h-[360px] overflow-auto"
                         style={{ overflow: "auto", position: "relative" }}
                       >
                         <img
@@ -354,8 +354,8 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
                       <div
                         style={{
                           position: "absolute",
-                          top: 12,
-                          right: 12,
+                          top: 40,
+                          right: 40,
                           display: "flex",
                           gap: 4,
                           background: "#fff",
@@ -426,11 +426,10 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
                     }}
                   >
                     <div
-                      className="w-full h-[280px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group"
-                      style={{ background: "#f9fafb" }}
+                      className="w-full h-[260px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group"
                     >
                       <div
-                        className="w-full h-full overflow-auto bg-gray-50"
+                        className="w-full h-[360px] overflow-auto"
                         style={{ overflow: "auto", position: "relative" }}
                       >
                         <img
@@ -448,8 +447,8 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
                       <div
                         style={{
                           position: "absolute",
-                          top: 12,
-                          right: 12,
+                          top: 40,
+                          right: 40,
                           display: "flex",
                           gap: 4,
                           background: "#fff",
@@ -569,7 +568,7 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
               {/* CO2 Grid Chart */}
               <div className="flex flex-col items-center w-full">
                 <div className="relative" style={{ width: "70%", minWidth: 320 }}>
-                  <div className="w-[600px] h-[220px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: "#f9fafb", position: "relative" }}>
+                  <div className="w-[600px] h-[210px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: "#f9fafb", position: "relative" }}>
                     <div className="w-full h-full overflow-auto bg-gray-50" style={{ overflow: "auto", position: "relative" }}>
                       <img
                         src={getR3EmissionImgUrl("CO2", cityName)}
@@ -621,7 +620,7 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
               {/* CH4 Grid Chart */}
               <div className="flex flex-col items-center w-full">
                 <div className="relative" style={{ width: "70%", minWidth: 320 }}>
-                  <div className="w-[600px] h-[220px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: "#f9fafb", position: "relative" }}>
+                  <div className="w-[600px] h-[210px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: "#f9fafb", position: "relative" }}>
                     <div className="w-full h-full overflow-auto bg-gray-50" style={{ overflow: "auto", position: "relative" }}>
                       <img
                         src={getR3EmissionImgUrl("CH4", cityName)}
@@ -673,7 +672,7 @@ const FinalResultsPage = ({ resultsSelection, setResultsSelection }) => {
               {/* N2O Grid Chart */}
               <div className="flex flex-col items-center w-full">
                 <div className="relative" style={{ width: "70%", minWidth: 320 }}>
-                  <div className="w-[600px] h-[220px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: "#f9fafb", position: "relative" }}>
+                  <div className="w-[600px] h-[210px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group" style={{ background: "#f9fafb", position: "relative" }}>
                     <div className="w-full h-full overflow-auto bg-gray-50" style={{ overflow: "auto", position: "relative" }}>
                       <img
                         src={getR3EmissionImgUrl("N2O", cityName)}

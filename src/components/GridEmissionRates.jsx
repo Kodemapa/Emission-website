@@ -280,7 +280,7 @@ const GridEmissionRates = ({ activeStep, isResults }) => {
             {classificationState.cityInput && GridEmissionState.EmissionType ? (
               <div className="relative w-full max-w-[600px]">
                 <div className="w-full h-[220px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group">
-                  <div className="w-full h-full overflow-auto bg-gray-50" style={{overflow: 'auto', position: 'relative'}}>
+                  <div className="w-full h-full overflow-auto" style={{overflow: 'auto', position: 'relative'}}>
                     <img
                       src={getAnalysisImgUrl(GridEmissionState.EmissionType, classificationState.cityInput)}
                       alt="Grid Emission Plot"

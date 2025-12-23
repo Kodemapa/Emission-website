@@ -238,7 +238,7 @@ function ProjectedDemand() {
               </div>
 
               {/* Scrollable Area */}
-              <div className="w-full h-[400px] overflow-auto bg-gray-50">
+              <div className="w-full h-[360px] overflow-auto">
                 <img
                   src={projectedImg}
                   alt={`${mappedCity} ${year} Projected Demand`}

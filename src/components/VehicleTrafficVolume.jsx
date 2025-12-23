@@ -339,25 +339,20 @@ function VehicleTrafficVolume() {
         {/* --- Results Section with Zoom --- */}
         {showResults && trafficState.speedEstimated && trafficPlotImg && (
           <div className="flex flex-col gap-2 w-full max-w-4xl mt-6">
-            
-            {/* 1. Zoomable Image Container */}
-            <div className="relative w-full h-[400px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group">
-              <div className="w-full h-full overflow-auto bg-gray-50">
-                <img
-                  src={trafficPlotImg}
-                  alt="Traffic Plot"
-                  className="transition-all duration-200 ease-out origin-top-left max-w-none"
-                  style={{ 
-                    // Width is controlled by zoom
-                    width: `${imageZoom * 100}%`,
-                    // Height auto preserves aspect ratio
-                    height: 'auto',
-                    minWidth: '100%',
-                    minHeight: '100%',
-                    objectFit: 'contain'
-                  }}
-                />
-              </div>
+            {/* 1. Zoomable Image Container (no drag/scroll) */}
+            <div className="relative w-full h-[360px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group">
+              <img
+                src={trafficPlotImg}
+                alt="Traffic Plot"
+                className="transition-all duration-200 ease-out origin-top-left max-w-none"
+                style={{ 
+                  width: `${imageZoom * 100}%`,
+                  height: 'auto',
+                  minWidth: '100%',
+                  minHeight: '100%',
+                  objectFit: 'contain'
+                }}
+              />
               <ZoomToolbar 
                 onZoomIn={handleZoomIn}
                 onZoomOut={handleZoomOut}
