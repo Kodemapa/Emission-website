@@ -314,9 +314,14 @@ function ProjectedDemand() {
         ) : null}
         
         {/* Tract Table with Width 950px */}
-        <div className="max-w-[950px]">
-           <TractParametersTable trafficState={trafficState} />
-        </div>
+       <div style={{ width: '950px', overflowX: 'auto', overflowY: 'hidden' ,textAlign:'center', marginTop:'32px'}}>
+                <div className="bg-[#f7f7f9] text-[#222222] text-center box-border font-semibold border border-solid border-[#cccccc] rounded-none" style={{borderRadius:0}}>
+                  <span>Macroscopic Traffic Model Parameters</span>
+                </div>
+                <div style={{display:'inline-block', width:'100%'}}>
+                  <TractParametersTable trafficState={trafficState} alignLeft />
+                </div>
+              </div>
       </div>
 
       {/* Right Column: City Map */}

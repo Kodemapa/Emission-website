@@ -377,7 +377,7 @@ function VehicleTrafficVolume() {
                   <span>Macroscopic Traffic Model Parameters</span>
                 </div>
                 <div style={{display:'inline-block', width:'100%'}}>
-                  <TractParametersTable trafficState={trafficState} alignCenter />
+                  <TractParametersTable trafficState={trafficState} alignLeft />
                 </div>
               </div>
             )}
