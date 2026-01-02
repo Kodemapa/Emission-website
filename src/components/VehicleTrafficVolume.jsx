@@ -173,75 +173,47 @@ function VehicleTrafficVolume() {
       const ws = wb.Sheets[wb.SheetNames[0]];
       const parsed = XLSX.utils.sheet_to_json(ws, { header: 1 });
 
+      // Create a local update object to avoid race conditions
+      let updates = {};
+
       if (type === "trafficVolume") {
-        if (parsed.length) {
-          setTrafficState({
-            trafficVolumeHeaders: parsed[0],
-            trafficVolumeData: parsed.slice(1),
-            trafficVolumeFile: file,
-          });
-        } else {
-          setTrafficState({
-            trafficVolumeHeaders: [],
-            trafficVolumeData: [],
-            trafficVolumeFile: file,
-          });
-        }
+        updates = {
+          trafficVolumeHeaders: parsed.length ? parsed[0] : [],
+          trafficVolumeData: parsed.length ? parsed.slice(1) : [],
+          trafficVolumeFile: file,
+        };
       } else if (type === "mftParameters") {
-        if (parsed.length) {
-          setTrafficState({
-            trafficMFTParametersHeaders: parsed[0],
-            trafficMFTParametersData: parsed.slice(1),
-            trafficMFTParametersFile: file,
-          });
-        } else {
-          setTrafficState({
-            trafficMFTParametersHeaders: [],
-            trafficMFTParametersData: [],
-            trafficMFTParametersFile: file,
-          });
-        }
-        // POST to /process/traffic after upload
+        updates = {
+          trafficMFTParametersHeaders: parsed.length ? parsed[0] : [],
+          trafficMFTParametersData: parsed.length ? parsed.slice(1) : [],
+          trafficMFTParametersFile: file,
+        };
+      }
+
+      // Update state first
+      setTrafficState(updates);
+
+      // Only attempt background processing if it's the parameters file
+      if (type === "mftParameters" && parsed.length) {
         try {
           const city = (classificationState.city ?? classificationState.cityInput) || "";
           const year = classificationState.baseYear || "";
-          const formData = new FormData();
-          formData.append("city_name", city);
-          formData.append("year", year);
-          formData.append("parameters_file", file);
-          await fetch("http://127.0.0.1:5003/process/traffic", {
-            method: "POST",
-            body: formData,
-          });
-          // Image logic: fetch traffic plot image from backend
-          try {
-            if (!city || !year) return;
-            const url = `http://127.0.0.1:5003/plot/traffic/${encodeURIComponent(city)}/${encodeURIComponent(year)}`;
-            const res = await fetch(url);
-            if (!res.ok) throw new Error("Failed to fetch traffic plot image");
-            const blob = await res.blob();
-            const imgUrl = URL.createObjectURL(blob);
-            setTrafficState({ trafficPlotImg: imgUrl });
-          } catch (err) {
-            setTrafficState({ trafficPlotImg: null });
-            const msg = "Failed to load traffic plot image";
-            addNotification(msg);
+          if (city && year) {
+            const formData = new FormData();
+            formData.append("city_name", city);
+            formData.append("year", year);
+            formData.append("parameters_file", file);
+            
+            // Just notify the backend, don't force the plot fetch yet
+            await fetch("http://127.0.0.1:5003/process/traffic", {
+              method: "POST",
+              body: formData,
+            });
           }
         } catch (err) {
-          const msg = "MFD parameters processing failed";
-          addNotification(msg);
+          console.error("MFD background processing failed", err);
         }
       }
-
-      const city = (classificationState.city ?? classificationState.cityInput) || "";
-      const trafficVolumeFile = type === "trafficVolume" ? file : trafficState.trafficVolumeFile;
-      const mftParametersFile = type === "mftParameters" ? file : trafficState.trafficMFTParametersFile;
-      const values = {
-        city,
-        trafficVolumeFile: trafficVolumeFile ? trafficVolumeFile.name : null,
-        mftParametersFile: mftParametersFile ? mftParametersFile.name : null,
-      };
-      console.log("Traffic Volume and Speed upload values (after upload):", values);
     };
 
     file.name.endsWith(".csv") ? reader.readAsText(file) : reader.readAsBinaryString(file);

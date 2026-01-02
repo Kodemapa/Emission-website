@@ -8,19 +8,18 @@ type AnyRow = Record<string, any>;
 function TractParametersTable({ trafficState, alignLeft }: { trafficState: any, alignLeft?: boolean }) {
   const theme = useAppStore((s) => s.theme);
 
-  const headers: string[] = trafficState.trafficMFTParametersHeaders ?? [];
+  const rawHeaders: string[] = trafficState.trafficMFTParametersHeaders ?? [];
   const rawData = trafficState.trafficMFTParametersData ?? [];
 
-  // Build columns from headers, add S.No column
+  const getSafeField = (h: string) => String(h).replace(/[^\w\s]/gi, '_').trim();
+
   const columns: GridColDef[] = useMemo(() => {
-    // Default to center unless alignLeft is true
     const align = alignLeft ? 'left' : 'center';
     
-    // S.No Column (Grey background to match header)
     const snoCol: GridColDef = {
       field: 'sno',
       headerName: '',
-      width: 50,
+      width: 40,
       sortable: false,
       align: 'center', 
       headerAlign: 'center',
@@ -29,87 +28,56 @@ function TractParametersTable({ trafficState, alignLeft }: { trafficState: any, 
       disableColumnReorder: true,
     };
     
-    const baseColumns = headers.map((h) => {
-      const name = h === "R^2" ? "R²" : String(h);
-      const lowerName = name.toLowerCase();
+    const baseColumns = rawHeaders.map((h) => {
+      const fieldKey = getSafeField(h);
+      const headerName = h === "R^2" ? "R²" : String(h);
+      const lowerName = headerName.toLowerCase();
 
-      // 1. Tract ID column logic
+      let width: number;
+
+      // Adjusted dynamic width for slightly larger font (7.8px multiplier)
       if (lowerName.includes('tract id')) {
-        const width = Math.max(90, Math.min(150, name.length * 10 + 20));
-        return {
-          field: String(h),
-          headerName: name,
-          minWidth: width,
-          maxWidth: width,
-          width,
-          sortable: false,
-          headerClassName: 'custom-header',
-          align,
-          headerAlign: align,
-          resizable: false,
-          disableColumnReorder: true,
-        };
-      } 
-      // 2. Shape Parameter logic - INCREASED WIDTH FIX
-      else if (lowerName.includes('shape parameter')) {
-        // Increased from 110 to 140 to prevent "Shape Param..." truncation
-        const width = 140; 
-        return {
-          field: String(h),
-          headerName: name,
-          minWidth: width,
-          maxWidth: width,
-          width,
-          sortable: false,
-          headerClassName: 'custom-header',
-          align,
-          headerAlign: align,
-          resizable: false,
-          disableColumnReorder: true,
-        };
+        width = 110; 
+      } else {
+        const tightCalculatedWidth = headerName.length * 7.8 + 15; 
+        width = Math.max(90, Math.min(300, tightCalculatedWidth));
       }
-      else {
-        // Other columns
-        const charWidth = 9;
-        const width = Math.max(60, Math.min(200, name.length * charWidth));
-        return {
-          field: String(h),
-          headerName: name,
-          minWidth: width,
-          maxWidth: width,
-          width,
-          sortable: false,
-          headerClassName: 'custom-header',
-          align,
-          headerAlign: align,
-          resizable: false,
-          disableColumnReorder: true,
-        };
-      }
+
+      return {
+        field: fieldKey,
+        headerName,
+        width, 
+        sortable: false,
+        align,
+        headerAlign: align,
+        resizable: false,
+        disableColumnReorder: true,
+      };
     });
     return [snoCol, ...baseColumns];
-  }, [headers, alignLeft]);
+  }, [rawHeaders, alignLeft]);
 
-  // Normalize rows
   const allRows: AnyRow[] = useMemo(() => {
     if (!rawData?.length) return [];
-    if (Array.isArray(rawData[0])) {
-      return (rawData as any[][]).map((arr, idx) => {
-        const r: AnyRow = { id: idx + 1, sno: idx + 1 };
-        headers.forEach((h, i) => (r[String(h)] = arr[i] ?? null));
-        return r;
-      });
-    }
-    return (rawData as AnyRow[]).map((r, idx) => {
-      return { id: r.id ?? idx + 1, sno: idx + 1, ...r };
+    
+    return rawData.map((row: any, idx: number) => {
+      const normalizedRow: AnyRow = { id: idx + 1, sno: idx + 1 };
+      if (Array.isArray(row)) {
+        rawHeaders.forEach((h, i) => {
+          normalizedRow[getSafeField(h)] = row[i] !== undefined ? row[i] : null;
+        });
+      } else {
+        rawHeaders.forEach((h) => {
+          const safeKey = getSafeField(h);
+          normalizedRow[safeKey] = row[h] !== undefined ? row[h] : (row[safeKey] ?? null);
+        });
+      }
+      return normalizedRow;
     });
-  }, [rawData, headers]);
+  }, [rawData, rawHeaders]);
 
   return allRows.length ? (
-    <Box
-      className="min-w-[60%]"
-      sx={{ minHeight: 0 }} 
-    >
+    <Box className="min-w-[60%]" sx={{ minHeight: 0 }}>
       <div style={{ height: 400, width: "100%" }}>
         <DataGrid
           rows={allRows}
@@ -118,111 +86,58 @@ function TractParametersTable({ trafficState, alignLeft }: { trafficState: any, 
           disableColumnMenu
           disableRowSelectionOnClick
           checkboxSelection={false}
+          hideFooterPagination={true}
           slots={{ footer: () => null }}
-          disableColumnReorder
-          disableColumnResize
           
-          // --- COMPACT HEIGHTS ---
-          rowHeight={28} 
-          columnHeaderHeight={30}
+          // Increased heights to accommodate larger 14px text
+          rowHeight={30} 
+          columnHeaderHeight={32}
           
           sx={{
-            border: '1px solid #cccccc',
+            border: '1px solid #e5e5e5', 
             borderRadius: 0, 
-            
-            // --- FONT FIX: SEGOE UI (Flat Top "3") ---
             fontFamily: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important',
-            fontSize: '13px !important',
-            letterSpacing: 'normal !important', 
-            lineHeight: 'normal !important',
-            color: '#000000 !important', 
             
-            // --- HEADER ROW STYLING (First Row - GREY) ---
+            // INCREASED FONT SIZE TO MATCH REFERENCE
+            fontSize: '14px !important', 
+            
+            color: theme === "dark" ? "#fff" : "#000000 !important", 
+            opacity: 0.9, 
+
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: theme === "dark" ? "#333" : "#f0f0f0 !important", 
-              borderBottom: '1px solid #cccccc',
-              minHeight: '30px !important',
-              maxHeight: '30px !important',
-              lineHeight: '30px !important',
+              borderBottom: '1px solid #e5e5e5',
             },
             "& .MuiDataGrid-columnHeader": {
-              borderRight: '1px solid #cccccc',
-              textTransform: 'none',
-              height: '30px !important',
-              fontFamily: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important',
-              fontWeight: '700 !important',
-              fontSize: '13px !important',
-              letterSpacing: 'normal !important',
-              color: theme === "dark" ? "#fff" : "#000000 !important",
+              borderRight: '1px solid #e5e5e5',
               backgroundColor: theme === "dark" ? "#333" : "#f0f0f0 !important",
+              fontWeight: '700 !important',
+              padding: '0 4px !important',
             },
             "& .MuiDataGrid-columnHeaderTitle": {
-              fontWeight: "700 !important", 
-              fontFamily: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important',
-              fontSize: '13px !important',
-              letterSpacing: 'normal !important',
-              color: theme === "dark" ? "#fff" : "#000000 !important",
+              fontWeight: '700 !important',
+              overflow: 'visible',
             },
-            "& .MuiDataGrid-columnHeader:focus": {
-              outline: "none",
-            },
-            "& .MuiDataGrid-columnHeader:last-child": {
-              borderRight: 'none',
-            },
-
-            // --- FIRST COLUMN (S.No) STYLING (First Col - GREY) ---
-            "& .sno-cell": {
-              backgroundColor: theme === "dark" ? "#1f2937" : "#f0f0f0 !important", 
-              color: theme === "dark" ? "#9ca3af" : "#000000 !important",
-              borderRight: '1px solid #cccccc',
-              fontWeight: '400 !important', 
-              textAlign: 'center !important',
-              justifyContent: 'center !important',
-              display: 'flex !important',
-              letterSpacing: 'normal !important',
-            },
-
-            // --- DATA CELL STYLING ---
             "& .MuiDataGrid-cell": {
-              borderRight: '1px solid #e5e5e5', 
-              borderBottom: '1px solid #e5e5e5',
-              textAlign: alignLeft ? 'left' : 'center',
-              paddingLeft: '5px !important',
-              fontWeight: '400 !important', 
-              fontFamily: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important',
-              fontSize: '13px !important',
-              letterSpacing: 'normal !important', 
-              lineHeight: 'normal !important', 
+              borderRight: '1px solid #f0f0f0', 
+              borderBottom: '1px solid #f5f5f5', 
+              padding: '0 4px !important',
+              backgroundColor: theme === "dark" ? "#18181b" : "#ffffff !important",
               color: theme === "dark" ? "#e5e7eb" : "#000000 !important",
             },
-            // Explicit White Background for Data Cells (excluding S.No)
-            "& .MuiDataGrid-row > .MuiDataGrid-cell:not(.sno-cell)": {
-               backgroundColor: theme === "dark" ? "#18181b" : "#ffffff !important",
+            "& .sno-cell": {
+              backgroundColor: theme === "dark" ? "#1f2937" : "#f0f0f0 !important", 
+              borderRight: '1px solid #e5e5e5',
+              fontWeight: '400 !important',
+              fontSize: '13px !important', // Kept slightly smaller for serial numbers
             },
-
-            "& .MuiDataGrid-cell:focus": {
-              outline: "none",
-            },
-            
-            // --- CLEANUP ---
-            "& .MuiDataGrid-row:last-child .MuiDataGrid-cell": {
-              borderBottom: 'none',
-            },
-            "& .MuiDataGrid-cell:last-child": {
-              borderRight: 'none',
-            },
-            "& .MuiDataGrid-row:hover": {
-              backgroundColor: 'inherit',
-            },
+            "& .MuiDataGrid-row:hover": { backgroundColor: 'inherit' },
+            "& .MuiDataGrid-cell:focus, & .MuiDataGrid-columnHeader:focus": { outline: "none" },
           }}
         />
       </div>
     </Box>
-  ) : (
-    <div className="min-w-[60%] flex items-center justify-center h-auto text-gray-500">
-      No data
-    </div>
-  );
+  ) : null;
 }
 
 export default TractParametersTable;
