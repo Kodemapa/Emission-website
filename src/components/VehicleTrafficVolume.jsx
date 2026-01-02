@@ -66,10 +66,10 @@ function VehicleTrafficVolume() {
 
   // Restore showResults and trafficPlotImg on mount if data exists
   useEffect(() => {
-    if (trafficState.speedEstimated && (trafficState.trafficVolumeData?.length > 0 || trafficState.trafficMFTParametersData?.length > 0)) {
+    if (trafficState.speedEstimated && (trafficState.trafficVolumeFile || trafficState.trafficMFTParametersData?.length > 0)) {
       setTrafficState({ showResults: true });
     }
-  }, [trafficState.speedEstimated, trafficState.trafficVolumeData, trafficState.trafficMFTParametersData, setTrafficState]);
+  }, [trafficState.speedEstimated, trafficState.trafficVolumeFile, trafficState.trafficMFTParametersData, setTrafficState]);
 
   // Reset zoom when city changes
   useEffect(() => {
@@ -178,8 +178,6 @@ function VehicleTrafficVolume() {
 
       if (type === "trafficVolume") {
         updates = {
-          trafficVolumeHeaders: parsed.length ? parsed[0] : [],
-          trafficVolumeData: parsed.length ? parsed.slice(1) : [],
           trafficVolumeFile: file,
         };
       } else if (type === "mftParameters") {
@@ -223,7 +221,7 @@ function VehicleTrafficVolume() {
   let key = city.trim();
   if (key.toLowerCase() === "los angeles") key = "Los Angeles";
 
-  const hasTrafficVolumeData = trafficState.trafficVolumeData && trafficState.trafficVolumeData.length > 0;
+  const hasTrafficVolumeFile = trafficState.trafficVolumeFile;
   const hasMFTParametersData = trafficState.trafficMFTParametersData && trafficState.trafficMFTParametersData.length > 0;
 
   return (
@@ -301,7 +299,7 @@ function VehicleTrafficVolume() {
                 addNotification(msg);
               }
             }}
-            disabled={!(hasTrafficVolumeData && hasMFTParametersData)}
+            disabled={!(hasTrafficVolumeFile && hasMFTParametersData)}
           >
             Estimate Speed
           </button>
