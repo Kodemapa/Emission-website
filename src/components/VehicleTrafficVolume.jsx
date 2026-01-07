@@ -309,8 +309,8 @@ function VehicleTrafficVolume() {
         {/* --- Results Section with Zoom --- */}
         {showResults && trafficState.speedEstimated && trafficPlotImg && (
           <div className="flex flex-col gap-2 w-full max-w-4xl mt-6">
-            {/* 1. Zoomable Image Container (no drag/scroll) */}
-            <div className="relative w-full h-[360px] border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm group">
+            {/* 1. Zoomable Image Container (with scroll) */}
+            <div className="relative w-full h-[360px] border border-gray-200 rounded-lg overflow-auto bg-white shadow-sm group">
               <img
                 src={trafficPlotImg}
                 alt="Traffic Plot"
